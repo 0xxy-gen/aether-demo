@@ -927,34 +927,72 @@ function buildFairingScene(vIdx) {
     new THREE.Vector3(Math.cos(ua)*(ringR+bracketGap), 0, Math.sin(ua)*(ringR+bracketGap)),
   ], new THREE.LineBasicMaterial({color:0x00d4ff, transparent:true, opacity:.8})));
 
-  // ── 4b. TOP-MOUNTED PRIMARY PAYLOAD — centered above ring stack ──
-  // Axial primary payload sitting on top of the uppermost ESPA ring
+  // ── 4b. PRIMARY PAYLOAD — cake topper: conical adapter + cuboid satellite ──
   const topRingTopY = ringStep + collarH / 2 + flangeH;
-  const primW = collarR * 1.55, primH = collarR * 0.90, primD = collarR * 1.55;
+
+  // ── Conical adapter (PAF frustum) ─────────────────────────────────────────
+  // Tapers from the ESPA top flange radius down to a smaller payload interface
+  const adaptBotR = flangeOuterR;          // matches top ESPA flange OD
+  const adaptTopR = ER * 0.30;             // smaller payload interface ring
+  const adaptH    = ER * 0.65;             // adapter height
+
+  // Solid frustum skin (semi-transparent, dark aluminium)
+  const adaptMat = new THREE.MeshStandardMaterial({
+    color:0x2a3a4a, metalness:.65, roughness:.35,
+    transparent:true, opacity:.82, side:THREE.DoubleSide
+  });
+  const adaptCone = new THREE.Mesh(
+    new THREE.CylinderGeometry(adaptTopR, adaptBotR, adaptH, 48, 1, true), adaptMat);
+  adaptCone.position.y = topRingTopY + adaptH / 2;
+  espaGroup.add(adaptCone);
+
+  // Longitude ribs on adapter surface
+  const nAdaptRibs = 12;
+  for(let i=0;i<nAdaptRibs;i++){
+    const a = (i/nAdaptRibs)*Math.PI*2;
+    const bright = i%3===0;
+    espaGroup.add(mkLine([
+      new THREE.Vector3(Math.cos(a)*adaptBotR, topRingTopY,          Math.sin(a)*adaptBotR),
+      new THREE.Vector3(Math.cos(a)*adaptTopR, topRingTopY+adaptH,   Math.sin(a)*adaptTopR),
+    ], new THREE.LineBasicMaterial({color: bright?0x4499bb:0x224466, transparent:true, opacity: bright?.65:.35})));
+  }
+  // Adapter top interface ring
+  espaGroup.add(mkRing(adaptTopR, topRingTopY + adaptH, 48,
+    new THREE.LineBasicMaterial({color:0x00d4ff, transparent:true, opacity:.80})));
+  // Adapter bottom ring (at ESPA top flange)
+  espaGroup.add(mkRing(adaptBotR, topRingTopY, 48,
+    new THREE.LineBasicMaterial({color:0x00d4ff, transparent:true, opacity:.55})));
+
+  // ── Primary cuboid satellite ───────────────────────────────────────────────
+  const primW = ER * 0.82, primH = ER * 1.00, primD = ER * 0.82;
+  const primBotY = topRingTopY + adaptH + 0.04;
   const primGrp = new THREE.Group();
+
+  // Semi-transparent amber fill
   primGrp.add(new THREE.Mesh(
     new THREE.BoxGeometry(primW, primH, primD),
     new THREE.MeshStandardMaterial({
       color:0xf59e0b, metalness:.15, roughness:.55,
-      transparent:true, opacity:.20, depthWrite:false, side:THREE.DoubleSide
+      transparent:true, opacity:.22, depthWrite:false, side:THREE.DoubleSide
     })
   ));
+  // Gold wireframe edges
   primGrp.add(mkBoxWireframe(primW, primH, primD,
-    new THREE.LineBasicMaterial({color:0xf5c518, transparent:true, opacity:.90})));
-  // Horizontal datum lines on front face
-  for(let li=0;li<4;li++){
-    const yOff = -primH*.38 + (primH*.76/3)*li;
+    new THREE.LineBasicMaterial({color:0xf5c518, transparent:true, opacity:.92})));
+  // Horizontal scan lines on front face (solar panel / panel grid feel)
+  for(let li=0;li<5;li++){
+    const yOff = -primH*.40 + (primH*.80/4)*li;
     primGrp.add(mkLine([
-      new THREE.Vector3(-primW*.44, yOff, primD/2+.003),
-      new THREE.Vector3( primW*.44, yOff, primD/2+.003),
-    ], new THREE.LineBasicMaterial({color:0xf5c518, transparent:true, opacity:.35})));
+      new THREE.Vector3(-primW*.44, yOff,  primD/2+.003),
+      new THREE.Vector3( primW*.44, yOff,  primD/2+.003),
+    ], new THREE.LineBasicMaterial({color:0xf5c518, transparent:true, opacity:.38})));
+    // Back face too
+    primGrp.add(mkLine([
+      new THREE.Vector3(-primW*.44, yOff, -primD/2-.003),
+      new THREE.Vector3( primW*.44, yOff, -primD/2-.003),
+    ], new THREE.LineBasicMaterial({color:0xf5c518, transparent:true, opacity:.20})));
   }
-  // Vertical connector from ring top to payload bottom
-  espaGroup.add(mkLine([
-    new THREE.Vector3(0, topRingTopY, 0),
-    new THREE.Vector3(0, topRingTopY + 0.06, 0),
-  ], new THREE.LineBasicMaterial({color:0xf5c518, transparent:true, opacity:.6})));
-  primGrp.position.set(0, topRingTopY + 0.06 + primH / 2, 0);
+  primGrp.position.set(0, primBotY + primH / 2, 0);
   espaGroup.add(primGrp);
 
   // ── 5. MASS CG ─────────────────────────────────────────────
