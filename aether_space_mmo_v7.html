@@ -530,22 +530,16 @@ function buildFairingScene(vIdx) {
   const coneH  = 5.867; // ogive nose height (m)
   const aftR   = 1.757; // aft separation ring radius (m)
   const baseTransH = 1.22; // height of aft transition flare (m)
-  // Ogive arc radius from IGS (220.57 in * 0.0254 = 5.602m)
-  const ogiveArcR = 5.602;
+  // Tangent ogive arc radius derived from base radius R and nose length coneH
+  // Formula: ρ = (R² + L²) / (2R) — guarantees ρ > L so all sqrt args are positive
+  const ogiveArcR = (R*R + coneH*coneH) / (2*R);
 
-  // Build ogive profile: sample the true ogive curve
-  // Ogive: R(t) = sqrt(ogiveArcR² - (coneH*(1-t))²) - sqrt(ogiveArcR² - coneH²) + 0 at tip
-  // Simplified: use Von Kármán / tangent ogive approximation matching the arc radius
-  function ogiveRadius(t) {
-    // t=0: base of ogive (R=fairR), t=1: tip (R=0)
-    const y = coneH * t; // distance from base
-    // Tangent ogive: R(y) = R * sqrt(1 - (y/coneH)²) -- approximate
-    // Better: use the actual arc radius from IGS
-    const n = coneH; // nose length
-    const rho = ogiveArcR;
-    return Math.sqrt(rho*rho - (n-y)*(n-y)) - Math.sqrt(rho*rho - n*n);
+  // Tangent ogive profile: dist=0 at base (r=R), dist=coneH at tip (r=0)
+  // r(dist) = sqrt(ρ² - dist²) - (ρ - R)
+  // At dist=0: sqrt(ρ²) - (ρ-R) = R ✓   At dist=coneH: sqrt(ρ²-coneH²) - (ρ-R) = 0 ✓
+  function ogiveR(dist) {
+    return Math.sqrt(Math.max(0, ogiveArcR*ogiveArcR - dist*dist)) - (ogiveArcR - R);
   }
-  const ogiveBaseR = ogiveRadius(1.0); // should equal fairR at t=1
 
   // Total fairing sits with its aft face at some Y, ESPA ring inside
   // Place aft face at Y = -cylH/2 - baseTransH, top tip at Y = cylH/2 + coneH
@@ -585,14 +579,12 @@ function buildFairingScene(vIdx) {
 
   // Latitude rings along the ogive (true ogive radii)
   for(let ri=1;ri<=nOgiveSegs;ri++){
-    const t = ri/nOgiveSegs; // t=0 at base, t=1 at tip
+    const t = ri/nOgiveSegs; // t=0 at base (r=R), t=1 at tip (r=0)
     const dist = t * coneH;
-    const rAtT = Math.sqrt(Math.max(0, ogiveArcR*ogiveArcR - (coneH-dist)*(coneH-dist)))
-                 - Math.sqrt(ogiveArcR*ogiveArcR - coneH*coneH);
-    const rNorm = (R / ogiveBaseR) * rAtT; // scale to match cylinder radius
+    const rNorm = ogiveR(dist);
     const y = cylTopY + dist;
     if(rNorm > 0.02) {
-      const bright = ri === nOgiveSegs; // only the base ring is bright
+      const bright = ri === 1; // brightest ring at the base (widest, joins cylinder)
       fairingGroup.add(mkRing(rNorm, y, Math.max(8, Math.round(64 * rNorm/R)),
         bright ? wfFairing.clone() : wfFairingDim.clone()));
     }
@@ -607,9 +599,7 @@ function buildFairingScene(vIdx) {
     for(let pi=0;pi<=nPts;pi++){
       const t = pi/nPts;
       const dist = t * coneH;
-      const rAtT = Math.sqrt(Math.max(0, ogiveArcR*ogiveArcR - (coneH-dist)*(coneH-dist)))
-                   - Math.sqrt(ogiveArcR*ogiveArcR - coneH*coneH);
-      const rNorm = (R / ogiveBaseR) * rAtT;
+      const rNorm = ogiveR(dist);
       pts.push(new THREE.Vector3(Math.cos(a)*rNorm, cylTopY+dist, Math.sin(a)*rNorm));
     }
     for(let pi=0;pi<pts.length-1;pi++){
@@ -672,14 +662,12 @@ function buildFairingScene(vIdx) {
   for(let i=1;i<=nEnvCyl;i++){
     envProfile.push(new THREE.Vector2(R, cylBotY+(cylH/nEnvCyl)*i));
   }
-  // Ogive nose: cylTopY → tip, following true ogive profile
+  // Ogive nose: cylTopY → tip, following true ogive profile (r=R at base, r=0 at tip)
   const nEnvOgive = 40;
   for(let i=1;i<=nEnvOgive;i++){
     const t = i/nEnvOgive;
     const dist = t*coneH;
-    const rAtT = Math.sqrt(Math.max(0, ogiveArcR*ogiveArcR-(coneH-dist)*(coneH-dist)))
-                 - Math.sqrt(ogiveArcR*ogiveArcR-coneH*coneH);
-    envProfile.push(new THREE.Vector2(Math.max(0,(R/ogiveBaseR)*rAtT), cylTopY+dist));
+    envProfile.push(new THREE.Vector2(Math.max(0, ogiveR(dist)), cylTopY+dist));
   }
   const envelopeGeo  = new THREE.LatheGeometry(envProfile, 80);
   const envelopeMat  = new THREE.MeshStandardMaterial({
