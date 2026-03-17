@@ -355,12 +355,12 @@ const VEHICLES = [
     util:.784, volFrac:.621, slots:'3 / 8', strMarg:'1.4×', color:0x00d4ff,
     espaR:1.55, nPorts:6,
     payloads:[
-      {portIdx:0, w:1.0, h:0.90, d:0.85, mass:240, cls:'ESPA', occupied:true },
-      {portIdx:1, w:0.7, h:0.60, d:0.55, mass:95,  cls:'6U',   occupied:true },
-      {portIdx:2, w:0.65,h:0.58, d:0.50, mass:42,  cls:'6U',   occupied:true },
-      {portIdx:3, w:0.9, h:0.80, d:0.80, mass:165, cls:'ESPA', occupied:true },
-      {portIdx:4, w:0.7, h:0.60, d:0.55, mass:78,  cls:'6U',   occupied:true },
-      {portIdx:5, w:0.0, h:0.0,  d:0.0,  mass:0,   cls:'',     occupied:false},
+      {portIdx:0, w:1.30, h:1.18, d:1.10, mass:240, cls:'ESPA', occupied:true },
+      {portIdx:1, w:0.92, h:0.80, d:0.72, mass:95,  cls:'6U',   occupied:true },
+      {portIdx:2, w:0.86, h:0.76, d:0.66, mass:42,  cls:'6U',   occupied:true },
+      {portIdx:3, w:1.18, h:1.06, d:1.05, mass:165, cls:'ESPA', occupied:true },
+      {portIdx:4, w:0.92, h:0.80, d:0.72, mass:78,  cls:'6U',   occupied:true },
+      {portIdx:5, w:0.0,  h:0.0,  d:0.0,  mass:0,   cls:'',     occupied:false},
     ]
   },
   { name:'Electron Kick Stage', provider:'Rocket Lab', manifest:'RS-12',
@@ -382,12 +382,12 @@ const VEHICLES = [
     util:.50, volFrac:.44, slots:'4 / 12', strMarg:'1.25×', color:0xa78bfa,
     espaR:1.0, nPorts:6,
     payloads:[
-      {portIdx:0, w:0.85,h:0.75, d:0.70, mass:120, cls:'ESPA', occupied:true },
-      {portIdx:1, w:0.65,h:0.58, d:0.52, mass:68,  cls:'6U',   occupied:true },
-      {portIdx:2, w:0.95,h:0.85, d:0.80, mass:198, cls:'ESPA', occupied:true },
-      {portIdx:3, w:0.70,h:0.62, d:0.58, mass:88,  cls:'12U',  occupied:true },
-      {portIdx:4, w:0.0, h:0.0,  d:0.0,  mass:0,   cls:'',     occupied:false},
-      {portIdx:5, w:0.0, h:0.0,  d:0.0,  mass:0,   cls:'',     occupied:false},
+      {portIdx:0, w:1.12, h:0.98, d:0.92, mass:120, cls:'ESPA', occupied:true },
+      {portIdx:1, w:0.86, h:0.76, d:0.68, mass:68,  cls:'6U',   occupied:true },
+      {portIdx:2, w:1.24, h:1.12, d:1.05, mass:198, cls:'ESPA', occupied:true },
+      {portIdx:3, w:0.92, h:0.82, d:0.76, mass:88,  cls:'12U',  occupied:true },
+      {portIdx:4, w:0.0,  h:0.0,  d:0.0,  mass:0,   cls:'',     occupied:false},
+      {portIdx:5, w:0.0,  h:0.0,  d:0.0,  mass:0,   cls:'',     occupied:false},
     ]
   }
 ];
@@ -680,8 +680,8 @@ function buildFairingScene(vIdx) {
   fairingGroup.position.y = fairingOffsetY;
 
   // ── 2. ESPA RING — three stacked rings (ORBCOMM-style configuration) ──
-  const collarR   = ER * 0.92;
-  const collarH   = ER * 0.70;
+  const collarR   = ER * 0.68;   // 26% narrower central tower
+  const collarH   = ER * 0.95;  // taller rings → taller stack
   const wallThick = ER * 0.055;
   const flangeH   = ER * 0.055;
   const portR     = ER * 0.285;
@@ -859,7 +859,7 @@ function buildFairingScene(vIdx) {
   const ringThick = wallThick;
 
   // ── 3. MANIFEST PAYLOADS — wireframe boxes at port angles ─
-  const bracketGap = 0.12;
+  const bracketGap = 0.22;  // wider gap → more fairing wall clearance
 
   v.payloads.forEach(p => {
     const a   = (p.portIdx / N) * Math.PI * 2;
@@ -926,6 +926,36 @@ function buildFairingScene(vIdx) {
     new THREE.Vector3(Math.cos(ua)*(ringR+ringThick), 0, Math.sin(ua)*(ringR+ringThick)),
     new THREE.Vector3(Math.cos(ua)*(ringR+bracketGap), 0, Math.sin(ua)*(ringR+bracketGap)),
   ], new THREE.LineBasicMaterial({color:0x00d4ff, transparent:true, opacity:.8})));
+
+  // ── 4b. TOP-MOUNTED PRIMARY PAYLOAD — centered above ring stack ──
+  // Axial primary payload sitting on top of the uppermost ESPA ring
+  const topRingTopY = ringStep + collarH / 2 + flangeH;
+  const primW = collarR * 1.55, primH = collarR * 0.90, primD = collarR * 1.55;
+  const primGrp = new THREE.Group();
+  primGrp.add(new THREE.Mesh(
+    new THREE.BoxGeometry(primW, primH, primD),
+    new THREE.MeshStandardMaterial({
+      color:0xf59e0b, metalness:.15, roughness:.55,
+      transparent:true, opacity:.20, depthWrite:false, side:THREE.DoubleSide
+    })
+  ));
+  primGrp.add(mkBoxWireframe(primW, primH, primD,
+    new THREE.LineBasicMaterial({color:0xf5c518, transparent:true, opacity:.90})));
+  // Horizontal datum lines on front face
+  for(let li=0;li<4;li++){
+    const yOff = -primH*.38 + (primH*.76/3)*li;
+    primGrp.add(mkLine([
+      new THREE.Vector3(-primW*.44, yOff, primD/2+.003),
+      new THREE.Vector3( primW*.44, yOff, primD/2+.003),
+    ], new THREE.LineBasicMaterial({color:0xf5c518, transparent:true, opacity:.35})));
+  }
+  // Vertical connector from ring top to payload bottom
+  espaGroup.add(mkLine([
+    new THREE.Vector3(0, topRingTopY, 0),
+    new THREE.Vector3(0, topRingTopY + 0.06, 0),
+  ], new THREE.LineBasicMaterial({color:0xf5c518, transparent:true, opacity:.6})));
+  primGrp.position.set(0, topRingTopY + 0.06 + primH / 2, 0);
+  espaGroup.add(primGrp);
 
   // ── 5. MASS CG ─────────────────────────────────────────────
   const cgSphere = new THREE.Mesh(
