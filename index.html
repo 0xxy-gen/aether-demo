@@ -943,8 +943,9 @@ function buildFairingScene(vIdx) {
 
   [-ringStep, 0, ringStep].forEach((ringY, ri) => {
     for(let pi = 0; pi < N; pi++){
-      // Clear only the middle ring at the user's port — that's where the cyan payload sits
-      if (pi === _sidePortIdx && ri === 1) continue;
+      // In side-mount mode only: leave the middle ring at the user's port empty (primary lives there)
+      // In cake-top mode: all 18 holes get a ghost
+      if (_sideMount && pi === _sidePortIdx && ri === 1) continue;
 
       const a   = (pi / N) * Math.PI * 2;
       const sz  = ringSizes[ri][pi % ringSizes[ri].length];
@@ -1721,11 +1722,9 @@ async function runSolve(){
   // Reveal secondary payloads now that the solve is running
   if (payloadGroup)    payloadGroup.visible    = true;
   if (userPayloadMesh) userPayloadMesh.visible = true;
-  // Side-mount mode: show adapter + ghost primary search
-  if (S._primSideMount) {
-    if (adapterGrpRef)  adapterGrpRef.visible  = true;
-    if (cakeGhostGrp)   cakeGhostGrp.visible   = true;
-  }
+  // Show ghost primary search in both modes; adapter only needed for side-mount
+  if (cakeGhostGrp)  cakeGhostGrp.visible  = true;
+  if (S._primSideMount && adapterGrpRef) adapterGrpRef.visible = true;
 
   S.pbPhase='seeding'; S.pbProgress=0; S.pbPlaying=true;
   S.pbSpeed=.5; S.pbStartTime=performance.now();
@@ -1769,7 +1768,7 @@ function finishPlayback(){
   if(primaryPayloadGrp){ primaryPayloadGrp.visible = true; primaryPayloadGrp.scale.setScalar(1); }
   if(mountGroup) mountGroup.visible = true;
   // Lock ghost to winning primary candidate (index 1 — medium sat, 1.5×2.5×1.2m)
-  if (cakeGhostGrp && S._primSideMount) {
+  if (cakeGhostGrp) {
     const [gw, gh, gd] = cakeGhostGrp._sizes[1];
     cakeGhostGrp.visible = true;
     cakeGhostGrp.scale.set(gw, gh, gd);
