@@ -330,7 +330,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tp);font-
     <div class="vp-canvas-wrap">
       <canvas id="three-canvas"></canvas>
       <div class="cubesat-reco" id="cubesat-reco">
-        <strong>CUBESTAT</strong>
+        <strong>CUBESAT</strong>
         Recommend using a CubeSat deployer.
       </div>
       <div class="solve-overlay" id="solve-ol">
@@ -784,6 +784,13 @@ function buildVehicleFairingGeometry(v, fairingOffsetY) {
     });
     fairingGroup.add(new THREE.Mesh(new THREE.LatheGeometry(envProfile, 96), envelopeMat));
 
+    // Close the tip so the nose does not end in an open ring.
+    const noseCap = new THREE.Mesh(new THREE.CircleGeometry(tipR, 40), envelopeMat.clone());
+    noseCap.rotation.x = -Math.PI / 2;
+    noseCap.position.y = tipY;
+    fairingGroup.add(noseCap);
+    fairingGroup.add(mkRing(tipR, tipY, 40, wfFairing.clone()));
+
     fairingGroup.position.y = fairingOffsetY;
     currentFairingRadiusAtWorldY = worldY => radiusAtLocalY(worldY - fairingOffsetY);
     return { aftFaceY, aftR: R };
@@ -1123,9 +1130,8 @@ function buildFairingScene(vIdx) {
 
   [-ringStep, 0, ringStep].forEach((ringY, ri) => {
     for(let pi = 0; pi < N; pi++){
-      // In side-mount mode only: leave the middle ring at the user's port empty (primary lives there)
-      // In cake-top mode: all 18 holes get a ghost
-      if (_sideMount && pi === _sidePortIdx && ri === 1) continue;
+      // Clear only the middle ring at the user's port — that's where the cyan payload sits
+      if (pi === _sidePortIdx && ri === 1) continue;
 
       const a   = (pi / N) * Math.PI * 2;
       const sz  = ringSizes[ri][pi % ringSizes[ri].length];
@@ -1327,6 +1333,51 @@ function fairingRadiusAtWorldY(worldY) {
   return currentFairingRadiusAtWorldY(worldY);
 }
 
+function getPayloadBody(group) {
+  return group?.children?.find(ch => ch.isMesh) || null;
+}
+
+function payloadGroupFitsInsideFairing(group) {
+  const body = getPayloadBody(group);
+  if (!body?.geometry) return true;
+
+  body.geometry.computeBoundingBox();
+  const bb = body.geometry.boundingBox;
+  const width = bb.max.x - bb.min.x;
+  const height = bb.max.y - bb.min.y;
+  const depth = bb.max.z - bb.min.z;
+  const centerY = group.position.y;
+  const botY = centerY - height / 2;
+  const centerR = Math.hypot(group.position.x, group.position.z);
+  const outerCornerR = centerR + Math.sqrt((width / 2) ** 2 + (depth / 2) ** 2);
+
+  for (let i = 0; i <= 32; i++) {
+    const worldY = botY + (height / 32) * i;
+    if (outerCornerR > fairingRadiusAtWorldY(worldY)) return false;
+  }
+  return true;
+}
+
+function setManifestPayloadFitState(group, fits) {
+  group.traverse(ch => {
+    if (ch.isMesh && ch.material) {
+      ch.material.color.set(fits ? 0x0a1a3a : 0x3b0b12);
+      if (ch.material.emissive) ch.material.emissive.set(fits ? 0x000000 : 0x3a0000);
+    } else if (ch.isLine && ch.material) {
+      ch.material.color.set(fits ? 0x2266cc : 0xff4d5c);
+    }
+  });
+}
+
+function updateManifestPayloadFitStates() {
+  if (!payloadGroupGroups.length) return;
+  if (!S.showFairing) {
+    payloadGroupGroups.forEach(group => setManifestPayloadFitState(group, true));
+    return;
+  }
+  payloadGroupGroups.forEach(group => setManifestPayloadFitState(group, payloadGroupFitsInsideFairing(group)));
+}
+
 function setPrimaryPayloadFitState(fits) {
   if (!primaryPayloadGrp) return;
   primaryPayloadGrp.traverse(ch => {
@@ -1342,38 +1393,25 @@ function setPrimaryPayloadFitState(fits) {
 // ── Check whether the rendered yellow payload box fits inside the fairing ──
 function checkPayloadFit() {
   if (!primaryPayloadGrp) {
+    updateManifestPayloadFitStates();
     updateCubeSatDeployerHint();
     return;
   }
   if (!S.showFairing) {
+    updateManifestPayloadFitStates();
     setPrimaryPayloadFitState(true);
     updateCubeSatDeployerHint();
     return;
   }
 
-  const body = primaryPayloadGrp.children.find(ch => ch.isMesh);
-  if (!body?.geometry) {
+  if (!getPayloadBody(primaryPayloadGrp)?.geometry) {
+    updateManifestPayloadFitStates();
     updateCubeSatDeployerHint();
     return;
   }
 
-  body.geometry.computeBoundingBox();
-  const bb = body.geometry.boundingBox;
-  const primW = bb.max.x - bb.min.x;
-  const primH = bb.max.y - bb.min.y;
-  const primD = bb.max.z - bb.min.z;
-  const centerY = primaryPayloadGrp.position.y;
-  const botY = centerY - primH / 2;
-  const centerR = Math.hypot(primaryPayloadGrp.position.x, primaryPayloadGrp.position.z);
-  const rCorner = centerR + Math.sqrt((primW / 2) ** 2 + (primD / 2) ** 2);
-
-  let fits = true;
-  const N = 32;
-  for (let i = 0; i <= N && fits; i++) {
-    const worldY = botY + (primH / N) * i;
-    if (rCorner > fairingRadiusAtWorldY(worldY)) fits = false;
-  }
-  setPrimaryPayloadFitState(fits);
+  updateManifestPayloadFitStates();
+  setPrimaryPayloadFitState(payloadGroupFitsInsideFairing(primaryPayloadGrp));
   updateCubeSatDeployerHint();
 }
 
@@ -1575,6 +1613,8 @@ function renderLoop(){
       }
     }
   }
+
+  checkPayloadFit();
 
   renderer.render(scene, camera);
 }
@@ -1912,9 +1952,11 @@ async function runSolve(){
   // Reveal secondary payloads now that the solve is running
   if (payloadGroup)    payloadGroup.visible    = true;
   if (userPayloadMesh) userPayloadMesh.visible = true;
-  // Show ghost primary search in both modes; adapter only needed for side-mount
-  if (cakeGhostGrp)  cakeGhostGrp.visible  = true;
-  if (S._primSideMount && adapterGrpRef) adapterGrpRef.visible = true;
+  // Side-mount mode: show adapter + ghost primary search
+  if (S._primSideMount) {
+    if (adapterGrpRef)  adapterGrpRef.visible  = true;
+    if (cakeGhostGrp)   cakeGhostGrp.visible   = true;
+  }
 
   S.pbPhase='seeding'; S.pbProgress=0; S.pbPlaying=true;
   S.pbSpeed=.5; S.pbStartTime=performance.now();
@@ -1957,7 +1999,7 @@ function finishPlayback(){
   if(primaryPayloadGrp){ primaryPayloadGrp.visible = true; primaryPayloadGrp.scale.setScalar(1); }
   if(mountGroup) mountGroup.visible = true;
   // Lock ghost to winning primary candidate (index 1 — medium sat, 1.5×2.5×1.2m)
-  if (cakeGhostGrp) {
+  if (cakeGhostGrp && S._primSideMount) {
     const [gw, gh, gd] = cakeGhostGrp._sizes[1];
     cakeGhostGrp.visible = true;
     cakeGhostGrp.scale.set(gw, gh, gd);
