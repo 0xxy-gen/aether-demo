@@ -44,6 +44,9 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tp);font-
 .field-err{font-size:8px;letter-spacing:.06em;margin-top:3px;display:none;padding:0 1px;color:var(--crit)}
 .field-err.warn{color:var(--warn)}
 .field-err.show{display:block}
+.field-note{font-size:8px;letter-spacing:.06em;margin-top:5px;padding:0 1px;color:var(--td)}
+.field-note.warn{color:var(--warn)}
+.field-note.pass{color:var(--pass)}
 .finput{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:2px;padding:6px 9px;color:var(--tp);font-family:var(--mono);font-size:11px;outline:none;transition:border-color .12s}
 .finput:focus{border-color:var(--acc)}
 .fselect{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:2px;padding:6px 9px;color:var(--tp);font-family:var(--mono);font-size:11px;outline:none;appearance:none;cursor:pointer}
@@ -101,6 +104,9 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tp);font-
 .ann-div{border-top:1px solid var(--border);margin:5px 0}
 .phase-label{position:absolute;top:12px;right:14px;font-family:var(--mono);font-size:9px;font-weight:500;color:var(--acc);letter-spacing:.1em;z-index:5;pointer-events:none;text-align:right}
 .phase-sub{font-size:8px;color:var(--td);margin-top:2px}
+.cubesat-reco{position:absolute;top:12px;right:14px;max-width:220px;background:rgba(255,214,10,.14);border:1px solid rgba(255,214,10,.7);box-shadow:0 0 18px rgba(255,214,10,.12);padding:9px 11px;font-family:var(--mono);font-size:9px;line-height:1.45;color:#ffd94a;letter-spacing:.04em;text-transform:uppercase;z-index:6;pointer-events:none;display:none}
+.cubesat-reco.show{display:block}
+.cubesat-reco strong{display:block;color:#ffe680;font-size:8px;letter-spacing:.12em;margin-bottom:3px}
 
 .solve-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(8,9,13,.75);display:none;align-items:center;justify-content:center;flex-direction:column;gap:10px;z-index:10}
 .solve-overlay.show{display:flex}
@@ -108,12 +114,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tp);font-
 @keyframes spin{to{transform:rotate(360deg)}}
 .solve-lbl{font-size:10px;color:var(--ts);letter-spacing:.1em}
 
-.config-rail{display:flex;gap:6px;padding:8px 14px;border-top:1px solid var(--border);background:var(--surface);overflow-x:auto;flex-shrink:0;scrollbar-width:none;z-index:2}
-.config-rail::-webkit-scrollbar{display:none}
-.config-thumb{flex-shrink:0;width:44px;height:44px;border:1px solid var(--border2);border-radius:2px;cursor:pointer;transition:all .12s;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px}
-.config-thumb.active,.config-thumb:hover{border-color:var(--acc)}
-.config-thumb-lbl{font-size:7px;letter-spacing:.06em;color:var(--td);text-transform:uppercase}
-.config-thumb-score{font-size:9px;color:var(--acc);font-weight:500}
 
 /* ── SCRUBBER ── */
 .scrubber{background:var(--surface);border-top:1px solid var(--border2);padding:8px 16px;display:none;flex-direction:column;gap:6px;flex-shrink:0}
@@ -195,6 +195,25 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tp);font-
   .status-dot{animation:none;opacity:1}
   .solve-ring{animation:none}
 }
+@media (max-width: 1100px){
+  html,body{overflow:auto}
+  .shell{height:auto;min-height:100vh;min-height:100dvh;grid-template-rows:38px auto auto 36px}
+  .main{grid-template-columns:1fr;grid-template-rows:auto minmax(320px,52vh) auto;overflow:visible}
+  .panel{border-right:none}
+  .panel:last-child{border-left:none;border-top:1px solid var(--border)}
+  .viewport{min-height:320px}
+  .vp-stats{flex-wrap:wrap}
+  .vp-stat{flex:1 1 33.33%;min-width:120px}
+}
+@media (max-width: 720px){
+  .topbar{gap:10px;padding:0 10px;overflow-x:auto}
+  .topbar-right{gap:10px}
+  .vp-toolbar{flex-wrap:wrap}
+  .vp-stats{display:grid;grid-template-columns:1fr 1fr}
+  .vp-stat{min-width:0}
+  .scrubber-top{flex-wrap:wrap}
+  .scr-track-wrap{order:3;width:100%}
+}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
 </style>
 </head>
@@ -223,7 +242,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tp);font-
       <div class="panel-hdr-label">01 / Mission Parameters</div>
       <div class="panel-hdr-title">Payload + Orbital Definition</div>
     </div>
-    <div class="field"><div class="field-label">Payload Mass <span class="field-val"><input type="number" class="fnum" id="num-mass" min="1" max="400" value="682" oninput="vmn('mass',this)" onkeydown="vmKey(event,'mass')" onblur="vmnBlur('mass',this)"> kg</span></div><div class="field-err" id="err-mass"></div></div>
+    <div class="field"><div class="field-label">Payload Mass <span class="field-val"><input type="number" class="fnum" id="num-mass" min="1" max="1000" value="682" oninput="vmn('mass',this)" onkeydown="vmKey(event,'mass')" onblur="vmnBlur('mass',this)"> kg</span></div><div class="field-err" id="err-mass"></div></div>
     <div class="field">
       <div class="field-label">Envelope <span style="color:var(--td);font-weight:400">mm</span></div>
       <div class="chip-g" id="env-presets" style="margin-bottom:7px">
@@ -251,6 +270,15 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tp);font-
         <input type="number" class="env-num" id="env-h" min="50" max="5000" value="4200" oninput="onEnvNum('h')">
       </div>
     </div>
+    <div class="field">
+      <div class="field-label">Payload Role</div>
+      <div class="chip-g" id="payload-role-chips">
+        <div class="chip on" data-role="auto" onclick="setPayloadRole('auto', this)">Auto</div>
+        <div class="chip" data-role="secondary" onclick="setPayloadRole('secondary', this)">Secondary</div>
+        <div class="chip" data-role="primary" onclick="setPayloadRole('primary', this)">Primary</div>
+      </div>
+      <div class="field-note" id="payload-role-note">Auto uses secondary unless it would hit the fairing or another payload.</div>
+    </div>
     <div class="field"><div class="field-label">Target Orbit</div><div class="chip-g"><div class="chip on" onclick="sc(this,'orbit')">SSO</div><div class="chip" onclick="sc(this,'orbit')">LEO</div><div class="chip" onclick="sc(this,'orbit')">MEO</div><div class="chip" onclick="sc(this,'orbit')">GTO</div></div></div>
     <div class="field"><div class="field-label">Altitude <span class="field-val"><input type="number" class="fnum" id="num-alt" min="300" max="1200" value="550" oninput="vmn('alt',this)" onkeydown="vmKey(event,'alt')" onblur="vmnBlur('alt',this)"> km</span></div><div class="field-err" id="err-alt"></div></div>
     <div class="field"><div class="field-label">Inclination <span class="field-val"><input type="number" class="fnum" id="num-inc" min="0" max="180" step="0.1" value="97.8" oninput="vmn('inc',this)" onkeydown="vmKey(event,'inc')" onblur="vmnBlur('inc',this)">°</span></div><div class="field-err" id="err-inc"></div></div>
@@ -277,11 +305,34 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tp);font-
       <button class="vp-btn" id="vb-xs" onclick="setView('top')">Top</button>
       <button class="vp-btn" id="vb-pl" onclick="setView('side')">Side</button>
       <button class="vp-btn on" id="vb-tr" onclick="toggleFairingShell()" aria-pressed="true">Fairing</button>
+      <button class="vp-btn on" id="vb-ad" onclick="toggleAdapters()" aria-pressed="true">Adapters</button>
       <button class="vp-btn" id="vb-ma" onclick="toggleMass()" aria-pressed="false">Mass CG</button>
       <span style="margin-left:auto;font-size:9px;color:var(--td);letter-spacing:.06em" id="vp-vehicle-lbl">— AWAITING SOLVE —</span>
     </div>
+    <div class="vp-stats">
+      <div class="vp-stat">
+        <div class="vp-stat-lbl">Manifest Util.</div>
+        <div class="vp-stat-val acc" id="vs-util">—</div>
+      </div>
+      <div class="vp-stat">
+        <div class="vp-stat-lbl">Volume Fill</div>
+        <div class="vp-stat-val" id="vs-vol">—</div>
+      </div>
+      <div class="vp-stat">
+        <div class="vp-stat-lbl">Struct. Margin</div>
+        <div class="vp-stat-val" id="vs-sm">—</div>
+      </div>
+      <div class="vp-stat">
+        <div class="vp-stat-lbl">Free Slots</div>
+        <div class="vp-stat-val warn" id="vs-slots">—</div>
+      </div>
+    </div>
     <div class="vp-canvas-wrap">
       <canvas id="three-canvas"></canvas>
+      <div class="cubesat-reco" id="cubesat-reco">
+        <strong>CUBESTAT</strong>
+        Recommend using a CubeSat deployer.
+      </div>
       <div class="solve-overlay" id="solve-ol">
         <svg class="solve-ring" width="36" height="36" viewBox="0 0 36 36">
           <circle cx="18" cy="18" r="14" fill="none" stroke="var(--border2)" stroke-width="1.5"/>
@@ -311,16 +362,9 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tp);font-
         <div class="ann-title">Manifest Utilisation</div>
         <div class="ann-row"><span>Mass fraction</span><span id="an-mf">—</span></div>
         <div class="ann-row"><span>Volume fraction</span><span id="an-vf">—</span></div>
-        <div class="ann-row"><span>Injection ΔV margin</span><span id="an-dv">—</span></div>
+        <div class="ann-row"><span>Available slots</span><span id="an-sl">—</span></div>
         <div class="ann-row"><span>Structural margin</span><span id="an-str">—</span></div>
       </div>
-    </div>
-    <div class="config-rail" id="config-rail" style="display:none">
-      <div style="font-size:8px;color:var(--td);letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:center;white-space:nowrap;padding-right:8px">Config</div>
-      <div class="config-thumb active" onclick="selConfig(this,0)"><div class="config-thumb-score">94.2</div><div class="config-thumb-lbl">Opt.</div></div>
-      <div class="config-thumb" onclick="selConfig(this,1)"><div class="config-thumb-score">91.8</div><div class="config-thumb-lbl">Alt A</div></div>
-      <div class="config-thumb" onclick="selConfig(this,2)"><div class="config-thumb-score">89.3</div><div class="config-thumb-lbl">Alt B</div></div>
-      <div class="config-thumb" onclick="selConfig(this,3)"><div class="config-thumb-score">87.1</div><div class="config-thumb-lbl">Alt C</div></div>
     </div>
   </div>
 
@@ -385,6 +429,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tp);font-
 const S = {
   mass:682, alt:550, inc:97.8, iface:'6U ISIPOD',
   envL:2300, envW:2400, envH:4200,   // payload envelope (mm)
+  payloadRole:'auto',
   view:'iso', solved:false, showFairing:true, showAdapters:true, showMass:false,
   selOpt:0,
   pbPhase:'idle', pbProgress:0, pbPlaying:false, pbSpeed:0.5,
@@ -393,6 +438,17 @@ const S = {
   swapAngle:0,         // current interpolated angle of the satellite on the ESPA ring
   shuffleSchedule:null, // [{progress, permutation}] — payload box shuffle events
 };
+
+const CUBESAT_PRESETS = [
+  { name:'1U', l:100, w:100, h:114 },
+  { name:'2U', l:100, w:100, h:227 },
+  { name:'3U', l:100, w:100, h:341 },
+  { name:'4U', l:100, w:100, h:454 },
+  { name:'5U', l:100, w:100, h:568 },
+  { name:'6U', l:226, w:100, h:341 },
+  { name:'12U', l:226, w:226, h:341 },
+];
+const CUBESAT_SMALL_VOLUME_MM3 = 226 * 226 * 341;
 
 // ══════════════════════════════════════════════════════════════
 // VEHICLE DATA
@@ -415,7 +471,7 @@ const VEHICLES = [
   },
   { name:'Neutron (Maiden Flight)', provider:'Rocket Lab', manifest:'',
     window:'2026-10-02 → 2026-10-18', orbit:'SSO 520km · 97.5°',
-    fairR:.6, fairH:2.5, compat:87.1, price:'$1.8M ±15%',
+    fairR:2.75, fairH:11.65, compat:87.1, price:'$1.8M ±15%',
     schedProb:.76, risk:'LOW-MED', deployer:'Custom', dvMargin:'18 m/s',
     util:.502, volFrac:.40, slots:'1 / 3', strMarg:'1.6×', color:0x00e5a0,
     espaR:0.35, nPorts:3,
@@ -515,6 +571,7 @@ let cakeGhostGrp  = null;   // cycling ghost primary payload during solve
 let candidateMeshes = [];
 let userPayloadMesh = null;
 let primaryPayloadGrp = null;
+let currentFairingRadiusAtWorldY = () => 0;
 // Cached references updated after buildFairingScene to avoid per-frame traversal
 let userPayloadBodyMat = null;   // the single MeshStandardMaterial on the user payload box
 let payloadGroupGroups = [];     // payloadGroup.children that are Groups (pre-filtered)
@@ -554,64 +611,199 @@ function mkBoxWireframe(w, h, d, mat){
   return grp;
 }
 
+function shortestAngleDelta(a, b) {
+  let d = a - b;
+  while (d > Math.PI) d -= Math.PI * 2;
+  while (d < -Math.PI) d += Math.PI * 2;
+  return d;
+}
 
-function buildFairingScene(vIdx) {
-  [fairingGroup, payloadGroup, espaGroup, massGroup, mountGroup].forEach(g=>{ if(g) scene.remove(g); });
-  if(userPayloadMesh) scene.remove(userPayloadMesh);
+function canSideMountPayload({ ringSizes, ringStep, ringR, bracketGap, sidePortIdx, nPorts }) {
+  const primW = S.envL / 1000;
+  const primH = S.envH / 1000;
+  const primD = S.envW / 1000;
+  const centerR = ringR + primD / 2 + bracketGap;
+  const centerY = 0;
+  const centerAngle = (sidePortIdx / nPorts) * Math.PI * 2;
+  const outerCornerR = centerR + Math.sqrt((primW / 2) ** 2 + (primD / 2) ** 2);
 
-  const v  = VEHICLES[vIdx];
-  const R  = v.fairR, H = v.fairH;
-  const ER = v.espaR, N = v.nPorts;
-
-  fairingGroup = new THREE.Group();
-  payloadGroup = new THREE.Group();
-  espaGroup    = new THREE.Group();
-  massGroup    = new THREE.Group();
-  mountGroup   = new THREE.Group();
-
-  // ── 1. FAIRING — Falcon 9 precise geometry from IGS ─────────
-  // Dimensions extracted from falcon_9_fairing.IGS (SolidWorks, units: inches)
-  // Max radius:    102.0 in = 2.591 m  (matches published 5.2m diameter)
-  // Aft ring rad:  69.19 in = 1.757 m  (separation plane interface)
-  // Cylinder Z:    48.15 → 315.0 in (height = 266.85 in = 6.778 m)
-  // Ogive nose Z:  315.0 → 546.0 in (height = 231.0 in = 5.867 m)
-  // Total length:  12.645 m
-  // The nose is a TRUE OGIVE, not a cone — arc radius ~220in from IGS arc entities
-  // Base flare:    small transition from R=1.757m at aft to R=2.591m over 1.22m
-  //
-  // Scale: published fairR=2.6 ≈ actual 2.591m, so scale ≈ 1.0
-  // We use fairR directly as the cylinder radius.
-
-  const nLong  = 18;    // longitude lines (every 20°)
-  const cylH   = 5.0;   // cylinder section height (m) — matches reference image proportion
-  const coneH  = 7.2;   // ogive nose height (m) — ~55% of total 13.2m per reference
-  const aftR   = 1.757; // aft separation ring radius (m)
-  const baseTransH = 1.0; // height of aft transition flare (m) — total: 5.0+7.2+1.0 = 13.2m
-  // Tangent ogive arc radius derived from base radius R and nose length coneH
-  // Formula: ρ = (R² + L²) / (2R) — guarantees ρ > L so all sqrt args are positive
-  const ogiveArcR = (R*R + coneH*coneH) / (2*R);
-
-  // Tangent ogive profile: dist=0 at base (r=R), dist=coneH at tip (r=0)
-  // r(dist) = sqrt(ρ² - dist²) - (ρ - R)
-  // At dist=0: sqrt(ρ²) - (ρ-R) = R ✓   At dist=coneH: sqrt(ρ²-coneH²) - (ρ-R) = 0 ✓
-  function ogiveR(dist) {
-    return Math.sqrt(Math.max(0, ogiveArcR*ogiveArcR - dist*dist)) - (ogiveArcR - R);
+  for (let i = 0; i <= 32; i++) {
+    const worldY = centerY - primH / 2 + (primH * i) / 32;
+    if (outerCornerR > fairingRadiusAtWorldY(worldY)) return false;
   }
 
-  // Total fairing sits with its aft face at some Y, ESPA ring inside
-  // Place aft face at Y = -cylH/2 - baseTransH, top tip at Y = cylH/2 + coneH
-  const aftFaceY   = -cylH/2 - baseTransH;
-  const cylBotY    = -cylH/2;
-  const cylTopY    =  cylH/2;
-  const tipY       =  cylH/2 + coneH;
+  const ringYs = [-ringStep, 0, ringStep];
+  for (let ri = 0; ri < ringYs.length; ri++) {
+    const ringY = ringYs[ri];
+    for (let pi = 0; pi < ringSizes[ri].length; pi++) {
+      const sz = ringSizes[ri][pi];
+      if (ri === 1 && pi === sidePortIdx) continue;
 
-  // Shift the whole fairing up so ESPA ring (Y=0) sits inside
-  // The ESPA ring is at ~1/4 up from the aft face of the cylinder
-  // Actual position: Z_espa = ~100in from aft = 2.54m from aft opening
-  // Place fairingGroup so aft face is below ESPA ring
-  const fairingOffsetY = 0.7; // fixed offset: keeps ESPA ring inside cylinder, PAF cone bottom below ESPA stack
+      const otherCenterR = ringR + sz.d / 2 + bracketGap;
+      const otherAngle = (pi / nPorts) * Math.PI * 2;
+      const tangentialSep = Math.abs(shortestAngleDelta(centerAngle, otherAngle)) * ((centerR + otherCenterR) / 2);
+      const radialSep = Math.abs(centerR - otherCenterR);
+      const verticalSep = Math.abs(centerY - ringY);
 
-  // ── Cylinder vertical longerons ──────────────────────────────
+      const tangentialLimit = primW / 2 + sz.w / 2;
+      const radialLimit = primD / 2 + sz.d / 2;
+      const verticalLimit = primH / 2 + sz.h / 2;
+
+      if (tangentialSep < tangentialLimit && radialSep < radialLimit && verticalSep < verticalLimit) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+function updatePayloadRoleNote(mode, canSideMount, usingSideMount) {
+  const note = document.getElementById('payload-role-note');
+  if (!note) return;
+
+  note.className = 'field-note';
+  if (mode === 'primary') {
+    note.textContent = 'Primary placement forced.';
+    return;
+  }
+  if (mode === 'secondary') {
+    if (canSideMount) {
+      note.textContent = 'Secondary placement forced.';
+      note.classList.add('pass');
+    } else {
+      note.textContent = 'Secondary placement forced even though it intersects the fairing or another payload.';
+      note.classList.add('warn');
+    }
+    return;
+  }
+
+  if (usingSideMount) {
+    note.textContent = 'Auto selected secondary because the side slot is clear.';
+    note.classList.add('pass');
+  } else {
+    note.textContent = 'Auto promoted to primary to avoid hitting the fairing or another payload.';
+    note.classList.add('warn');
+  }
+}
+
+function shouldRecommendCubeSatDeployer() {
+  const isCubeSatEnvelope = CUBESAT_PRESETS.some(p => p.l === S.envL && p.w === S.envW && p.h === S.envH);
+  const volumeMm3 = S.envL * S.envW * S.envH;
+  return isCubeSatEnvelope || volumeMm3 <= CUBESAT_SMALL_VOLUME_MM3;
+}
+
+function updateCubeSatDeployerHint() {
+  const hint = document.getElementById('cubesat-reco');
+  const phaseLabel = document.getElementById('phase-label');
+  if (!hint || !phaseLabel) return;
+
+  const showHint = S.showFairing && shouldRecommendCubeSatDeployer();
+  hint.classList.toggle('show', showHint);
+  phaseLabel.style.top = showHint ? '68px' : '12px';
+}
+
+function buildVehicleFairingGeometry(v, fairingOffsetY) {
+  if (v.name.startsWith('Neutron')) {
+    const R = v.fairR;
+    const aftFaceY = -3.45;
+    const cylTopY = 1.15;
+    const coneH = 5.3;
+    const tipR = 0.16;
+    const nLong = 20;
+    const tipY = cylTopY + coneH;
+    const ogiveArcR = ((R - tipR) * (R - tipR) + coneH * coneH) / (2 * (R - tipR));
+
+    function ogiveR(dist) {
+      return tipR + Math.sqrt(Math.max(0, ogiveArcR * ogiveArcR - dist * dist)) - (ogiveArcR - (R - tipR));
+    }
+
+    function radiusAtLocalY(localY) {
+      if (localY < aftFaceY || localY > tipY) return 0;
+      if (localY <= cylTopY) return R;
+      return ogiveR(localY - cylTopY);
+    }
+
+    for (let i = 0; i < nLong; i++) {
+      const a = (i / nLong) * Math.PI * 2;
+      const bright = i % 2 === 0;
+      fairingGroup.add(mkLine([
+        new THREE.Vector3(Math.cos(a) * R, aftFaceY, Math.sin(a) * R),
+        new THREE.Vector3(Math.cos(a) * R, cylTopY, Math.sin(a) * R),
+      ], bright ? wfFairing.clone() : wfFairingDim.clone()));
+    }
+
+    for (let i = 0; i <= 6; i++) {
+      const y = aftFaceY + ((cylTopY - aftFaceY) / 6) * i;
+      fairingGroup.add(mkRing(R, y, 80, i === 0 || i === 6 ? wfFairing.clone() : wfFairingDim.clone()));
+    }
+
+    for (let i = 1; i <= 7; i++) {
+      const dist = (i / 7) * coneH;
+      const r = ogiveR(dist);
+      const y = cylTopY + dist;
+      if (r > 0.03) {
+        fairingGroup.add(mkRing(r, y, Math.max(12, Math.round(80 * r / R)), i < 3 ? wfFairing.clone() : wfFairingDim.clone()));
+      }
+    }
+
+    for (let i = 0; i < nLong; i++) {
+      const a = (i / nLong) * Math.PI * 2;
+      const bright = i % 2 === 0;
+      const pts = [];
+      for (let pi = 0; pi <= 18; pi++) {
+        const dist = (pi / 18) * coneH;
+        const r = ogiveR(dist);
+        pts.push(new THREE.Vector3(Math.cos(a) * r, cylTopY + dist, Math.sin(a) * r));
+      }
+      for (let pi = 0; pi < pts.length - 1; pi++) {
+        fairingGroup.add(mkLine([pts[pi], pts[pi + 1]], bright ? wfFairing.clone() : wfFairingDim.clone()));
+      }
+    }
+
+    // Two-petal captive fairing seam lines, based on Rocket Lab's split clamshell design.
+    [0, Math.PI].forEach(a => {
+      fairingGroup.add(mkLine([
+        new THREE.Vector3(Math.cos(a) * R, aftFaceY, Math.sin(a) * R),
+        new THREE.Vector3(Math.cos(a) * R, cylTopY, Math.sin(a) * R),
+      ], new THREE.LineBasicMaterial({color:0x7ae6ff, transparent:true, opacity:0.95})));
+    });
+
+    const envProfile = [
+      new THREE.Vector2(R, aftFaceY),
+      new THREE.Vector2(R, cylTopY),
+    ];
+    for (let i = 1; i <= 36; i++) {
+      const dist = (i / 36) * coneH;
+      envProfile.push(new THREE.Vector2(Math.max(0, ogiveR(dist)), cylTopY + dist));
+    }
+    const envelopeMat = new THREE.MeshStandardMaterial({
+      color:0xc8d8e8, metalness:0.05, roughness:0.4,
+      transparent:true, opacity:0.10,
+      side:THREE.DoubleSide, depthWrite:false
+    });
+    fairingGroup.add(new THREE.Mesh(new THREE.LatheGeometry(envProfile, 96), envelopeMat));
+
+    fairingGroup.position.y = fairingOffsetY;
+    currentFairingRadiusAtWorldY = worldY => radiusAtLocalY(worldY - fairingOffsetY);
+    return { aftFaceY, aftR: R };
+  }
+
+  const R = v.fairR;
+  const cylH = 5.0;
+  const coneH = 7.2;
+  const aftR = 1.757;
+  const baseTransH = 1.0;
+  const nLong = 18;
+  const ogiveArcR = (R * R + coneH * coneH) / (2 * R);
+  const aftFaceY = -cylH / 2 - baseTransH;
+  const cylBotY = -cylH / 2;
+  const cylTopY = cylH / 2;
+
+  function ogiveR(dist) {
+    return Math.sqrt(Math.max(0, ogiveArcR * ogiveArcR - dist * dist)) - (ogiveArcR - R);
+  }
+
   for(let i=0;i<nLong;i++){
     const a = i/nLong*Math.PI*2;
     const bright = i%3===0;
@@ -620,129 +812,110 @@ function buildFairingScene(vIdx) {
       new THREE.Vector3(Math.cos(a)*R, cylTopY, Math.sin(a)*R),
     ], bright ? wfFairing.clone() : wfFairingDim.clone()));
   }
-
-  // ── Cylinder horizontal hoops (7 evenly spaced + top/bottom brighter) ──
-  const nCylRings = 7;
-  for(let i=0;i<=nCylRings;i++){
-    const y = cylBotY + (cylH/nCylRings)*i;
-    const bright = (i===0||i===nCylRings);
+  for(let i=0;i<=7;i++){
+    const y = cylBotY + (cylH/7)*i;
+    const bright = (i===0||i===7);
     fairingGroup.add(mkRing(R, y, 64, bright ? wfFairing.clone() : wfFairingDim.clone()));
   }
-
-  // ── Ogive nose — sampled meridian lines and latitude rings ───
-  // Sample the ogive profile at nSegs points
-  const nOgiveSegs = 6; // latitude rings on the nose
-  const nOgiveProfile = 24; // points per profile curve
-
-  // Latitude rings along the ogive (true ogive radii)
-  for(let ri=1;ri<=nOgiveSegs;ri++){
-    const t = ri/nOgiveSegs; // t=0 at base (r=R), t=1 at tip (r=0)
-    const dist = t * coneH;
+  for(let ri=1;ri<=6;ri++){
+    const dist = (ri / 6) * coneH;
     const rNorm = ogiveR(dist);
     const y = cylTopY + dist;
-    if(rNorm > 0.02) {
-      const bright = ri === 1; // brightest ring at the base (widest, joins cylinder)
-      fairingGroup.add(mkRing(rNorm, y, Math.max(8, Math.round(64 * rNorm/R)),
-        bright ? wfFairing.clone() : wfFairingDim.clone()));
-    }
+    if(rNorm > 0.02) fairingGroup.add(mkRing(rNorm, y, Math.max(8, Math.round(64 * rNorm/R)),
+      ri === 1 ? wfFairing.clone() : wfFairingDim.clone()));
   }
-
-  // Ogive meridian lines — curved, following the ogive profile
   for(let i=0;i<nLong;i++){
     const a = i/nLong*Math.PI*2;
     const bright = i%3===0;
     const pts = [];
-    const nPts = 16;
-    for(let pi=0;pi<=nPts;pi++){
-      const t = pi/nPts;
-      const dist = t * coneH;
+    for(let pi=0;pi<=16;pi++){
+      const dist = (pi / 16) * coneH;
       const rNorm = ogiveR(dist);
       pts.push(new THREE.Vector3(Math.cos(a)*rNorm, cylTopY+dist, Math.sin(a)*rNorm));
     }
-    for(let pi=0;pi<pts.length-1;pi++){
-      fairingGroup.add(mkLine([pts[pi], pts[pi+1]], bright ? wfFairing.clone() : wfFairingDim.clone()));
-    }
+    for(let pi=0;pi<pts.length-1;pi++) fairingGroup.add(mkLine([pts[pi], pts[pi+1]], bright ? wfFairing.clone() : wfFairingDim.clone()));
   }
-
-  // ── Aft transition flare (R=aftR → R=R over baseTransH) ─────
-  // 8 latitude rings in the flare
-  const nFlareRings = 4;
-  for(let i=0;i<=nFlareRings;i++){
-    const t = i/nFlareRings;
+  for(let i=0;i<=4;i++){
+    const t = i/4;
     const rFlare = aftR + (R - aftR) * t;
     const yFlare = aftFaceY + baseTransH * t;
-    const bright = (i===0||i===nFlareRings);
+    const bright = (i===0||i===4);
     fairingGroup.add(mkRing(rFlare, yFlare, 48, bright ? wfFairing.clone() : wfFairingDim.clone()));
   }
-  // Flare longerons
   for(let i=0;i<nLong;i++){
     const a = i/nLong*Math.PI*2;
     fairingGroup.add(mkLine([
-      new THREE.Vector3(Math.cos(a)*aftR, aftFaceY,  Math.sin(a)*aftR),
-      new THREE.Vector3(Math.cos(a)*R,    cylBotY,   Math.sin(a)*R),
+      new THREE.Vector3(Math.cos(a)*aftR, aftFaceY, Math.sin(a)*aftR),
+      new THREE.Vector3(Math.cos(a)*R, cylBotY, Math.sin(a)*R),
     ], wfFairingDim.clone()));
   }
 
-  // ── Aft separation ring (bright vivid blue clamp band) ───────
-  const clampRing = new THREE.Mesh(
-    new THREE.TorusGeometry(aftR, 0.055, 12, 80), wfClamp);
+  const clampRing = new THREE.Mesh(new THREE.TorusGeometry(aftR, 0.055, 12, 80), wfClamp);
   clampRing.rotation.x = Math.PI/2;
   clampRing.position.y = aftFaceY;
   fairingGroup.add(clampRing);
-  // Aft circle outline
-  fairingGroup.add(mkRing(aftR, aftFaceY, 80,
-    new THREE.LineBasicMaterial({color:0x2255ff, transparent:true, opacity:.85})));
+  fairingGroup.add(mkRing(aftR, aftFaceY, 80, new THREE.LineBasicMaterial({color:0x2255ff, transparent:true, opacity:.85})));
 
-  // ── PAF (payload attach fitting) disc ────────────────────────
-  // Actual PAF ring radius ~26.5in = 0.67m from IGS line: 110,26.5,504.,0.,-26.5,504.
-  // But in our coordinate system, PAF is at the very aft
   const pafR = 0.67;
-  const pafMesh = new THREE.Mesh(
-    new THREE.RingGeometry(pafR * 0.45, pafR, 40), wfPaf);
+  const pafMesh = new THREE.Mesh(new THREE.RingGeometry(pafR * 0.45, pafR, 40), wfPaf);
   pafMesh.rotation.x = -Math.PI / 2;
   pafMesh.position.y = aftFaceY;
   fairingGroup.add(pafMesh);
-  fairingGroup.add(mkRing(pafR, aftFaceY, 40,
-    new THREE.LineBasicMaterial({color:0x0066ff, transparent:true, opacity:.7})));
+  fairingGroup.add(mkRing(pafR, aftFaceY, 40, new THREE.LineBasicMaterial({color:0x0066ff, transparent:true, opacity:.7})));
 
-  // ── Transparent solid fairing envelope (full interior volume shell) ──
-  // Profile points for LatheGeometry: Vector2(radius, y) swept around Y axis
   const envProfile = [];
-  // Aft flare: aftFaceY (aftR) → cylBotY (R)
-  const nEnvFlare = 10;
-  for(let i=0;i<=nEnvFlare;i++){
-    const t = i/nEnvFlare;
+  for(let i=0;i<=10;i++){
+    const t = i/10;
     envProfile.push(new THREE.Vector2(aftR+(R-aftR)*t, aftFaceY+baseTransH*t));
   }
-  // Cylinder: cylBotY → cylTopY (constant radius R)
-  const nEnvCyl = 14;
-  for(let i=1;i<=nEnvCyl;i++){
-    envProfile.push(new THREE.Vector2(R, cylBotY+(cylH/nEnvCyl)*i));
-  }
-  // Ogive nose: cylTopY → tip, following true ogive profile (r=R at base, r=0 at tip)
-  const nEnvOgive = 40;
-  for(let i=1;i<=nEnvOgive;i++){
-    const t = i/nEnvOgive;
-    const dist = t*coneH;
+  for(let i=1;i<=14;i++) envProfile.push(new THREE.Vector2(R, cylBotY+(cylH/14)*i));
+  for(let i=1;i<=40;i++){
+    const dist = (i / 40) * coneH;
     envProfile.push(new THREE.Vector2(Math.max(0, ogiveR(dist)), cylTopY+dist));
   }
-  const envelopeGeo  = new THREE.LatheGeometry(envProfile, 80);
-  const envelopeMat  = new THREE.MeshStandardMaterial({
+  const envelopeMat = new THREE.MeshStandardMaterial({
     color:0xc8d8e8, metalness:0.05, roughness:0.4,
     transparent:true, opacity:0.10,
     side:THREE.DoubleSide, depthWrite:false
   });
-  fairingGroup.add(new THREE.Mesh(envelopeGeo, envelopeMat));
-
-  // ── Aft cap — close the bottom opening flush with the blue separation ring ──
-  // Offset +0.01 to avoid z-fighting with the PAF disc at the same Y
-  const aftCapGeo = new THREE.CircleGeometry(aftR, 80);
-  const aftCap    = new THREE.Mesh(aftCapGeo, envelopeMat.clone());
+  fairingGroup.add(new THREE.Mesh(new THREE.LatheGeometry(envProfile, 80), envelopeMat));
+  const aftCap = new THREE.Mesh(new THREE.CircleGeometry(aftR, 80), envelopeMat.clone());
   aftCap.rotation.x = Math.PI / 2;
   aftCap.position.y = aftFaceY + 0.01;
   fairingGroup.add(aftCap);
 
   fairingGroup.position.y = fairingOffsetY;
+  currentFairingRadiusAtWorldY = worldY => {
+    const localY = worldY - fairingOffsetY;
+    if (localY < aftFaceY || localY > cylTopY + coneH) return 0;
+    if (localY <= cylBotY) {
+      const t = (localY - aftFaceY) / baseTransH;
+      return aftR + (R - aftR) * t;
+    }
+    if (localY <= cylTopY) return R;
+    const dist = localY - cylTopY;
+    return Math.sqrt(Math.max(0, ogiveArcR * ogiveArcR - dist * dist)) - (ogiveArcR - R);
+  };
+  return { aftFaceY, aftR };
+}
+
+
+function buildFairingScene(vIdx) {
+  [fairingGroup, payloadGroup, espaGroup, massGroup, mountGroup].forEach(g=>{ if(g) scene.remove(g); });
+  if(userPayloadMesh) scene.remove(userPayloadMesh);
+
+  const v  = VEHICLES[vIdx];
+  const R  = v.fairR;
+  const ER = v.espaR, N = v.nPorts;
+
+  fairingGroup = new THREE.Group();
+  payloadGroup = new THREE.Group();
+  espaGroup    = new THREE.Group();
+  massGroup    = new THREE.Group();
+  mountGroup   = new THREE.Group();
+
+  const fairingOffsetY = 0.7; // fixed offset: keeps ESPA ring inside cylinder, PAF cone bottom below ESPA stack
+  const { aftFaceY, aftR } = buildVehicleFairingGeometry(v, fairingOffsetY);
 
   // ── 2. ESPA RING — three stacked rings (ORBCOMM-style configuration) ──
   const collarR   = ER * 0.68;   // 26% narrower central tower
@@ -936,10 +1109,17 @@ function buildFairingScene(vIdx) {
     [{w:0.44,h:0.40,d:0.34},{w:0.56,h:0.50,d:0.44},{w:0.44,h:0.40,d:0.34},{w:0.50,h:0.46,d:0.38},{w:0.44,h:0.40,d:0.34},{w:0.56,h:0.50,d:0.44}], // top — 3U / 6U compact
   ];
 
-  // Pre-compute placement mode so the payload loop can leave the occupied port empty
-  const _dimsMM = [S.envL, S.envH, S.envW].sort((a, b) => a - b);
-  const _sideMount = _dimsMM[0] <= 610 && _dimsMM[1] <= 610 && _dimsMM[2] <= 965;
   const _sidePortIdx = v.payloads.find(p => !p.occupied)?.portIdx ?? N - 1;
+  const _canSideMount = canSideMountPayload({
+    ringSizes,
+    ringStep,
+    ringR,
+    bracketGap,
+    sidePortIdx: _sidePortIdx,
+    nPorts: N,
+  });
+  const _sideMount = S.payloadRole === 'primary' ? false : S.payloadRole === 'secondary' ? true : _canSideMount;
+  updatePayloadRoleNote(S.payloadRole, _canSideMount, _sideMount);
 
   [-ringStep, 0, ringStep].forEach((ringY, ri) => {
     for(let pi = 0; pi < N; pi++){
@@ -1144,38 +1324,11 @@ function buildFairingScene(vIdx) {
 // ── Fairing interior radius at a given world-Y ───────────────
 // Mirrors the geometry constants hardcoded in buildFairingScene.
 function fairingRadiusAtWorldY(worldY) {
-  const R = 2.6, cylH = 5.0, coneH = 7.2, baseTransH = 1.0, aftR = 1.757, fairOffY = 0.7;
-  const localY   = worldY - fairOffY;
-  const aftFaceY = -cylH/2 - baseTransH;   // -3.5
-  const cylBotY  = -cylH/2;                // -2.5
-  const cylTopY  =  cylH/2;                //  2.5
-  if (localY < aftFaceY || localY > cylTopY + coneH) return 0;
-  if (localY <= cylBotY) {
-    const t = (localY - aftFaceY) / baseTransH;
-    return aftR + (R - aftR) * t;
-  }
-  if (localY <= cylTopY) return R;
-  const dist = localY - cylTopY;
-  const ogiveArcR = (R*R + coneH*coneH) / (2*R);
-  return Math.sqrt(Math.max(0, ogiveArcR*ogiveArcR - dist*dist)) - (ogiveArcR - R);
+  return currentFairingRadiusAtWorldY(worldY);
 }
 
-// ── Check whether the yellow payload box fits inside the fairing ──
-// Uses the corner diagonal (worst-case horizontal extent of a rectangular box).
-function checkPayloadFit() {
-  if (!primaryPayloadGrp || !S.showFairing) return;
-  const primW = S.envL/1000, primH = S.envH/1000, primD = S.envW/1000;
-  const centerY  = primaryPayloadGrp.position.y;
-  const botY     = centerY - primH/2;
-  const rCorner  = Math.sqrt((primW/2)**2 + (primD/2)**2); // max radial extent (box corner)
-
-  let fits = true;
-  const N = 32;
-  for (let i = 0; i <= N && fits; i++) {
-    const worldY = botY + (primH / N) * i;
-    if (rCorner > fairingRadiusAtWorldY(worldY)) fits = false;
-  }
-
+function setPrimaryPayloadFitState(fits) {
+  if (!primaryPayloadGrp) return;
   primaryPayloadGrp.traverse(ch => {
     if (ch.isMesh && ch.material) {
       ch.material.color.set(fits ? 0xf59e0b : 0xef4444);
@@ -1184,6 +1337,44 @@ function checkPayloadFit() {
       ch.material.color.set(fits ? 0xf5c518 : 0xff5555);
     }
   });
+}
+
+// ── Check whether the rendered yellow payload box fits inside the fairing ──
+function checkPayloadFit() {
+  if (!primaryPayloadGrp) {
+    updateCubeSatDeployerHint();
+    return;
+  }
+  if (!S.showFairing) {
+    setPrimaryPayloadFitState(true);
+    updateCubeSatDeployerHint();
+    return;
+  }
+
+  const body = primaryPayloadGrp.children.find(ch => ch.isMesh);
+  if (!body?.geometry) {
+    updateCubeSatDeployerHint();
+    return;
+  }
+
+  body.geometry.computeBoundingBox();
+  const bb = body.geometry.boundingBox;
+  const primW = bb.max.x - bb.min.x;
+  const primH = bb.max.y - bb.min.y;
+  const primD = bb.max.z - bb.min.z;
+  const centerY = primaryPayloadGrp.position.y;
+  const botY = centerY - primH / 2;
+  const centerR = Math.hypot(primaryPayloadGrp.position.x, primaryPayloadGrp.position.z);
+  const rCorner = centerR + Math.sqrt((primW / 2) ** 2 + (primD / 2) ** 2);
+
+  let fits = true;
+  const N = 32;
+  for (let i = 0; i <= N && fits; i++) {
+    const worldY = botY + (primH / N) * i;
+    if (rCorner > fairingRadiusAtWorldY(worldY)) fits = false;
+  }
+  setPrimaryPayloadFitState(fits);
+  updateCubeSatDeployerHint();
 }
 
 // ── Candidate meshes for playback ────────────────────────────
@@ -1685,7 +1876,6 @@ async function runSolve(){
   ol.classList.add('show');
   document.getElementById('ann-live').classList.remove('show');
   document.getElementById('ann-util').style.display='none';
-  document.getElementById('config-rail').style.display='none';
   document.getElementById('scrubber').classList.remove('show');
   document.getElementById('phase-label').style.display='none';
 
@@ -1750,7 +1940,6 @@ function finishPlayback(){
   document.getElementById('scr-play').textContent='▶';
   document.getElementById('ann-live').classList.remove('show');
   document.getElementById('ann-util').style.display='block';
-  document.getElementById('config-rail').style.display='flex';
   document.getElementById('phase-label').style.display='none';
   if(userPayloadMesh) userPayloadMesh.traverse(ch=>{if(ch.isMesh&&ch.material) ch.material.opacity=.9;});
   candidateMeshes.forEach(cm=>{ cm.mat.opacity=0; });
@@ -1830,7 +2019,6 @@ function pbReplay(){
   const replayBtn=document.getElementById('scr-play');replayBtn.textContent='❙❙';replayBtn.setAttribute('aria-label','Pause');
   document.getElementById('ann-live').classList.add('show');
   document.getElementById('ann-util').style.display='none';
-  document.getElementById('config-rail').style.display='none';
   const trace=buildSolverTrace();
   S.pbCandidates=trace.cands;S.pbSurvivors=trace.survivors;S.pbOptIdx=trace.optId;
   autoRotate=false;S.pbStartTime=performance.now();
@@ -1846,7 +2034,7 @@ function pbSkipEnd(){
 // ══════════════════════════════════════════════════════════════
 // ── Input sanitation ────────────────────────────────────────
 const FIELD_META = {
-  mass: { min:1,   max:400,  hint:'1 – 400 kg',     integer:true  },
+  mass: { min:1,   max:1000, hint:'1 – 1,000 kg',   integer:true  },
   alt:  { min:300, max:1200, hint:'300 – 1,200 km',  integer:true  },
   inc:  { min:0,   max:180,  hint:'0 – 180°',        integer:false },
 };
@@ -1874,9 +2062,30 @@ function onEnvSlider(ax) {
 }
 function onEnvNum(ax) {
   const sl = document.getElementById('env-'+ax+'-sl');
-  if (sl) sl.value = document.getElementById('env-'+ax).value;
+  const num = document.getElementById('env-'+ax);
+  if (sl && num) {
+    const min = Number(sl.min);
+    const max = Number(sl.max);
+    const raw = Number(num.value);
+    if (num.value !== '' && Number.isFinite(raw)) {
+      const clamped = Math.min(max, Math.max(min, raw));
+      num.value = clamped;
+      sl.value = clamped;
+    } else {
+      sl.value = num.value;
+    }
+  }
   document.querySelectorAll('#env-presets .chip').forEach(c => c.classList.remove('on'));
   updateEnvelope();
+}
+
+function setPayloadRole(role, el) {
+  S.payloadRole = role;
+  document.querySelectorAll('#payload-role-chips .chip').forEach(chip => {
+    chip.classList.toggle('on', chip.dataset.role === role);
+  });
+  if (el) el.classList.add('on');
+  buildFairingScene(S.selOpt);
 }
 
 // ── Envelope (L × W × H) live update ────────────────────────
@@ -1889,6 +2098,7 @@ function updateEnvelope() {
   const L = parseMM('env-l'), W = parseMM('env-w'), H = parseMM('env-h');
   if (!L || !W || !H) return;
   S.envL = L; S.envW = W; S.envH = H;
+  updateCubeSatDeployerHint();
   // Rebuild the scene 150ms after the user stops typing — simpler and correct for all 3 axes
   clearTimeout(_envDebounceTimer);
   _envDebounceTimer = setTimeout(() => buildFairingScene(S.selOpt), 150);
@@ -1990,6 +2200,7 @@ function toggleFairingShell(){
   const btn=document.getElementById('vb-tr');
   btn.classList.toggle('on',S.showFairing);
   btn.setAttribute('aria-pressed',String(S.showFairing));
+  checkPayloadFit();
 }
 function toggleAdapters(){
   S.showAdapters=!S.showAdapters;
@@ -2005,7 +2216,6 @@ function toggleMass(){
   btn.classList.toggle('on',S.showMass);
   btn.setAttribute('aria-pressed',String(S.showMass));
 }
-function selConfig(el, i){document.querySelectorAll('.config-thumb').forEach(c=>c.classList.remove('active'));el.classList.add('active');if(S.solved)selectOpt(i);}
 function toggleTrace(){document.getElementById('trace-drawer').classList.toggle('open');}
 function openTrace(){document.getElementById('trace-drawer').classList.add('open');}
 function setText(id,v){const el=document.getElementById(id);if(el)el.textContent=v;}
@@ -2056,14 +2266,12 @@ function selectOpt(i){
   const v=VEHICLES[i];
   setText('vs-util',Math.round(v.util*100)+'%');
   setText('vs-vol',Math.round(v.volFrac*100)+'%');
-  setText('vs-dv',v.dvMargin);
   setText('vs-sm',v.strMarg);
   setText('vs-slots',v.slots+' free');
   document.getElementById('vp-vehicle-lbl').textContent=v.name.toUpperCase()+' · '+v.provider.toUpperCase();
   setText('an-mf',Math.round(v.util*100)+'% / 91.2% max');
   setText('an-vf',Math.round(v.volFrac*100)+'% / 85.0% max');
   setText('an-sl',v.slots+' ESPA ports');
-  setText('an-dv',v.dvMargin+' remaining');
   setText('an-str',v.strMarg+' (limit 1.25×)');
   buildFairingScene(i);
 }
@@ -2094,6 +2302,8 @@ function updateTraceLog(){
     return `<div class="trace-line"><span class="ic ${l.p?'ic-pass':'ic-fail'}" style="flex-shrink:0;width:14px">${l.p?'✓':'✗'}</span><div><div class="msg">${l.msg}</div>${subs}</div></div>`;
   }).join('');
 }
+
+selectOpt(0);
 </script>
 </body>
 </html>
