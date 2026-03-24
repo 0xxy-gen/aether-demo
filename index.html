@@ -18,6 +18,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tp);font-
 .shell{display:grid;grid-template-rows:38px 1fr auto 36px;height:100vh;height:100dvh}
 .topbar{background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:16px;font-size:10px;letter-spacing:.1em;color:var(--ts)}
 .topbar-logo{color:var(--acc);font-weight:600;font-size:11px;letter-spacing:.18em}
+.topbar-tagline{font-size:9px;letter-spacing:.22em;color:var(--ts);text-transform:uppercase;font-family:var(--sans);font-weight:300;opacity:.75;padding-left:10px;border-left:1px solid var(--border2)}
 .topbar-sep{width:1px;height:16px;background:var(--border2)}
 .topbar-id{color:var(--td)}
 .topbar-right{margin-left:auto;display:flex;align-items:center;gap:14px}
@@ -48,6 +49,11 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tp);font-
 .fselect{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:2px;padding:6px 9px;color:var(--tp);font-family:var(--mono);font-size:11px;outline:none;appearance:none;cursor:pointer}
 .fselect option{background:var(--surface)}
 .frange{width:100%;accent-color:var(--acc);cursor:pointer}
+.env-row{display:grid;grid-template-columns:10px 1fr 42px;align-items:center;gap:7px;padding:3px 0}
+.env-lbl{font-size:9px;letter-spacing:.08em;color:var(--ts)}
+.env-num{background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--acc);font-family:var(--mono);font-size:10px;text-align:right;outline:none;width:42px;-moz-appearance:textfield}
+.env-num::-webkit-inner-spin-button,.env-num::-webkit-outer-spin-button{-webkit-appearance:none}
+.env-num:focus{border-bottom-color:var(--acc)}
 .frow{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .chip-g{display:flex;flex-wrap:wrap;gap:3px;margin-top:5px}
 .chip{font-size:9px;padding:2px 7px;border-radius:1px;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--border2);color:var(--td);cursor:pointer;transition:all .1s}
@@ -197,6 +203,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tp);font-
 
 <div class="topbar">
   <span class="topbar-logo">AETHER SPACE</span>
+  <span class="topbar-tagline">the operating system for orbital logistics</span>
   <div class="topbar-sep"></div>
   <span style="color:var(--ts)">MISSION MANIFEST OPTIMIZER</span>
   <div class="topbar-sep"></div>
@@ -217,13 +224,39 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tp);font-
       <div class="panel-hdr-title">Payload + Orbital Definition</div>
     </div>
     <div class="field"><div class="field-label">Payload Mass <span class="field-val"><input type="number" class="fnum" id="num-mass" min="1" max="400" value="682" oninput="vmn('mass',this)" onkeydown="vmKey(event,'mass')" onblur="vmnBlur('mass',this)"> kg</span></div><div class="field-err" id="err-mass"></div></div>
-    <div class="field"><div class="field-label">Envelope (L × W × H)</div><div class="frow"><input class="finput" value="1,200 mm"><input class="finput" value="850 mm"></div><div style="margin-top:5px"><input class="finput" value="650 mm" style="width:100%"></div></div>
+    <div class="field">
+      <div class="field-label">Envelope <span style="color:var(--td);font-weight:400">mm</span></div>
+      <div class="chip-g" id="env-presets" style="margin-bottom:7px">
+        <div class="chip" onclick="setEnvPreset('1U',  100, 100, 114)">1U</div>
+        <div class="chip" onclick="setEnvPreset('2U',  100, 100, 227)">2U</div>
+        <div class="chip" onclick="setEnvPreset('3U',  100, 100, 341)">3U</div>
+        <div class="chip" onclick="setEnvPreset('4U',  100, 100, 454)">4U</div>
+        <div class="chip" onclick="setEnvPreset('5U',  100, 100, 568)">5U</div>
+        <div class="chip" onclick="setEnvPreset('6U',  226, 100, 341)">6U</div>
+        <div class="chip" onclick="setEnvPreset('12U', 226, 226, 341)">12U</div>
+      </div>
+      <div class="env-row">
+        <span class="env-lbl">L</span>
+        <input type="range" class="frange" id="env-l-sl" min="50" max="3000" value="1200" oninput="onEnvSlider('l')">
+        <input type="number" class="env-num" id="env-l" min="50" max="3000" value="1200" oninput="onEnvNum('l')">
+      </div>
+      <div class="env-row">
+        <span class="env-lbl">W</span>
+        <input type="range" class="frange" id="env-w-sl" min="50" max="3000" value="800" oninput="onEnvSlider('w')">
+        <input type="number" class="env-num" id="env-w" min="50" max="3000" value="800" oninput="onEnvNum('w')">
+      </div>
+      <div class="env-row">
+        <span class="env-lbl">H</span>
+        <input type="range" class="frange" id="env-h-sl" min="50" max="5000" value="650" oninput="onEnvSlider('h')">
+        <input type="number" class="env-num" id="env-h" min="50" max="5000" value="650" oninput="onEnvNum('h')">
+      </div>
+    </div>
     <div class="field"><div class="field-label">Target Orbit</div><div class="chip-g"><div class="chip on" onclick="sc(this,'orbit')">SSO</div><div class="chip" onclick="sc(this,'orbit')">LEO</div><div class="chip" onclick="sc(this,'orbit')">MEO</div><div class="chip" onclick="sc(this,'orbit')">GTO</div></div></div>
     <div class="field"><div class="field-label">Altitude <span class="field-val"><input type="number" class="fnum" id="num-alt" min="300" max="1200" value="550" oninput="vmn('alt',this)" onkeydown="vmKey(event,'alt')" onblur="vmnBlur('alt',this)"> km</span></div><div class="field-err" id="err-alt"></div></div>
     <div class="field"><div class="field-label">Inclination <span class="field-val"><input type="number" class="fnum" id="num-inc" min="0" max="180" step="0.1" value="97.8" oninput="vmn('inc',this)" onkeydown="vmKey(event,'inc')" onblur="vmnBlur('inc',this)">°</span></div><div class="field-err" id="err-inc"></div></div>
     <div class="field"><div class="field-label">RAAN Window (° ± tol)</div><div class="frow"><input class="finput" value="LTAN 10:30"><input class="finput" value="± 15°"></div></div>
     <div class="field"><div class="field-label">Launch Window</div><div class="frow"><input class="finput" value="2026-07-01"><input class="finput" value="2026-09-30"></div></div>
-<div class="field"><div class="field-label">Regulatory Regime</div><select class="fselect"><option>FCC / NOAA (US)</option><option>ITU Coordination</option><option>ESA Licensing (EU)</option><option selected>ITAR-restricted</option><option>None specified</option></select></div>
+<div class="field"><div class="field-label">Regulatory Regime</div><select class="fselect"><option selected>ITAR Restricted</option><option>EAR Restricted</option></select></div>
     <div class="cst-section">
       <div class="cst-title">Constraint Status</div>
       <div class="cst-row" onclick="openTrace()"><div class="cst-name">MASS</div><div class="cst-bar-wrap"><div class="cst-bar" style="width:68%;background:var(--pass)"></div></div><div class="cst-detail">682 / 1,000 kg</div><div class="cst-dot pass"></div></div>
@@ -351,6 +384,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tp);font-
 // ══════════════════════════════════════════════════════════════
 const S = {
   mass:682, alt:550, inc:97.8, iface:'6U ISIPOD',
+  envL:1200, envW:800, envH:650,   // payload envelope (mm)
   view:'iso', solved:false, showFairing:true, showAdapters:true, showMass:false,
   selOpt:0,
   pbPhase:'idle', pbProgress:0, pbPlaying:false, pbSpeed:0.5,
@@ -476,6 +510,8 @@ updateCamera();
 
 // ── Scene objects registry ───────────────────────────────────
 let fairingGroup = null, payloadGroup = null, espaGroup = null, massGroup = null, mountGroup = null;
+let adapterGrpRef = null;   // cake-topper adapter — shown during solve when user payload is side-mounted
+let cakeGhostGrp  = null;   // cycling ghost primary payload during solve
 let candidateMeshes = [];
 let userPayloadMesh = null;
 let primaryPayloadGrp = null;
@@ -547,10 +583,10 @@ function buildFairingScene(vIdx) {
   // We use fairR directly as the cylinder radius.
 
   const nLong  = 18;    // longitude lines (every 20°)
-  const cylH   = 6.778; // cylinder section height (m)
-  const coneH  = 5.867; // ogive nose height (m)
+  const cylH   = 5.0;   // cylinder section height (m) — matches reference image proportion
+  const coneH  = 7.2;   // ogive nose height (m) — ~55% of total 13.2m per reference
   const aftR   = 1.757; // aft separation ring radius (m)
-  const baseTransH = 1.22; // height of aft transition flare (m)
+  const baseTransH = 1.0; // height of aft transition flare (m) — total: 5.0+7.2+1.0 = 13.2m
   // Tangent ogive arc radius derived from base radius R and nose length coneH
   // Formula: ρ = (R² + L²) / (2R) — guarantees ρ > L so all sqrt args are positive
   const ogiveArcR = (R*R + coneH*coneH) / (2*R);
@@ -573,7 +609,7 @@ function buildFairingScene(vIdx) {
   // The ESPA ring is at ~1/4 up from the aft face of the cylinder
   // Actual position: Z_espa = ~100in from aft = 2.54m from aft opening
   // Place fairingGroup so aft face is below ESPA ring
-  const fairingOffsetY = cylH * 0.28;
+  const fairingOffsetY = 0.7; // fixed offset: keeps ESPA ring inside cylinder, PAF cone bottom below ESPA stack
 
   // ── Cylinder vertical longerons ──────────────────────────────
   for(let i=0;i<nLong;i++){
@@ -697,6 +733,14 @@ function buildFairingScene(vIdx) {
     side:THREE.DoubleSide, depthWrite:false
   });
   fairingGroup.add(new THREE.Mesh(envelopeGeo, envelopeMat));
+
+  // ── Aft cap — close the bottom opening flush with the blue separation ring ──
+  // Offset +0.01 to avoid z-fighting with the PAF disc at the same Y
+  const aftCapGeo = new THREE.CircleGeometry(aftR, 80);
+  const aftCap    = new THREE.Mesh(aftCapGeo, envelopeMat.clone());
+  aftCap.rotation.x = Math.PI / 2;
+  aftCap.position.y = aftFaceY + 0.01;
+  fairingGroup.add(aftCap);
 
   fairingGroup.position.y = fairingOffsetY;
 
@@ -892,8 +936,17 @@ function buildFairingScene(vIdx) {
     [{w:0.44,h:0.40,d:0.34},{w:0.56,h:0.50,d:0.44},{w:0.44,h:0.40,d:0.34},{w:0.50,h:0.46,d:0.38},{w:0.44,h:0.40,d:0.34},{w:0.56,h:0.50,d:0.44}], // top — 3U / 6U compact
   ];
 
+  // Pre-compute placement mode so the payload loop can leave the occupied port empty
+  const _dimsMM = [S.envL, S.envH, S.envW].sort((a, b) => a - b);
+  const _sideMount = _dimsMM[0] <= 610 && _dimsMM[1] <= 610 && _dimsMM[2] <= 965;
+  const _sidePortIdx = v.payloads.find(p => !p.occupied)?.portIdx ?? N - 1;
+
   [-ringStep, 0, ringStep].forEach((ringY, ri) => {
     for(let pi = 0; pi < N; pi++){
+      // Always clear the middle ring at the user's port (cyan payload lives there);
+      // clear the whole column when side-mounted
+      if (pi === _sidePortIdx && (_sideMount || ri === 1)) continue;
+
       const a   = (pi / N) * Math.PI * 2;
       const sz  = ringSizes[ri][pi % ringSizes[ri].length];
       const pw = sz.w, ph = sz.h, pd = sz.d;
@@ -933,8 +986,8 @@ function buildFairingScene(vIdx) {
   const userPort = v.payloads.find(p=>!p.occupied)?.portIdx ?? 0;
   const ua   = (userPort / N) * Math.PI * 2;
   const uDir = new THREE.Vector3(Math.cos(ua), 0, Math.sin(ua));
-  const uSc  = Math.min(1.15, S.mass/280 + .42);
-  const uW=.74*uSc, uH=.64*uSc, uD=.54*uSc;
+  // Fixed secondary-payload size (ESPA 6U class) — not driven by Envelope field
+  const uW=0.74, uH=0.64, uD=0.54;
 
   const uGrp = new THREE.Group();
   // Semi-transparent fill
@@ -976,6 +1029,9 @@ function buildFairingScene(vIdx) {
   const adaptTopR = ER * 0.30;             // smaller payload interface ring
   const adaptH    = ER * 0.25;             // adapter height
 
+  // Group the whole cake-topper adapter so it can be hidden for side-mounted payloads
+  const adapterGrp = new THREE.Group();
+
   // Solid frustum skin (semi-transparent, dark aluminium)
   const adaptMat = new THREE.MeshStandardMaterial({
     color:0x2a3a4a, metalness:.65, roughness:.35,
@@ -984,28 +1040,34 @@ function buildFairingScene(vIdx) {
   const adaptCone = new THREE.Mesh(
     new THREE.CylinderGeometry(adaptTopR, adaptBotR, adaptH, 48, 1, true), adaptMat);
   adaptCone.position.y = topRingTopY + adaptH / 2;
-  espaGroup.add(adaptCone);
+  adapterGrp.add(adaptCone);
 
   // Longitude ribs on adapter surface
   const nAdaptRibs = 12;
   for(let i=0;i<nAdaptRibs;i++){
     const a = (i/nAdaptRibs)*Math.PI*2;
     const bright = i%3===0;
-    espaGroup.add(mkLine([
+    adapterGrp.add(mkLine([
       new THREE.Vector3(Math.cos(a)*adaptBotR, topRingTopY,          Math.sin(a)*adaptBotR),
       new THREE.Vector3(Math.cos(a)*adaptTopR, topRingTopY+adaptH,   Math.sin(a)*adaptTopR),
     ], new THREE.LineBasicMaterial({color: bright?0x4499bb:0x224466, transparent:true, opacity: bright?.65:.35})));
   }
   // Adapter top interface ring
-  espaGroup.add(mkRing(adaptTopR, topRingTopY + adaptH, 48,
+  adapterGrp.add(mkRing(adaptTopR, topRingTopY + adaptH, 48,
     new THREE.LineBasicMaterial({color:0x00d4ff, transparent:true, opacity:.80})));
   // Adapter bottom ring (at ESPA top flange)
-  espaGroup.add(mkRing(adaptBotR, topRingTopY, 48,
+  adapterGrp.add(mkRing(adaptBotR, topRingTopY, 48,
     new THREE.LineBasicMaterial({color:0x00d4ff, transparent:true, opacity:.55})));
+  espaGroup.add(adapterGrp);
+  adapterGrpRef = adapterGrp;
 
   // ── Primary cuboid satellite ───────────────────────────────────────────────
-  // TODO: change primary payload geometry (currently a plain box)
-  const primW = R * 0.85, primH = ER * 2.8, primD = R * 0.85;
+  // In cake-topper mode, scale the primary up when the secondary is small —
+  // fuller space-utilisation feel. Side-mount keeps envelope dims as-is.
+  const _primScale = _sideMount ? 1.0 : (1.0 + 0.55 * Math.max(0, 1 - S.mass / 200));
+  const primW = Math.min(R * 0.92, (S.envL/1000) * _primScale);
+  const primH = (S.envH/1000) * _primScale;
+  const primD = Math.min(R * 0.92, (S.envW/1000) * _primScale);
   const primBotY = topRingTopY + adaptH + 0.04;
   const primGrp = new THREE.Group();
 
@@ -1033,7 +1095,39 @@ function buildFairingScene(vIdx) {
       new THREE.Vector3( primW*.44, yOff, -primD/2-.003),
     ], new THREE.LineBasicMaterial({color:0xf5c518, transparent:true, opacity:.20})));
   }
-  primGrp.position.set(0, primBotY + primH / 2, 0);
+  // ── Placement: side-slot vs cake-topper ──────────────────────────────────
+  S._primSideMount = _sideMount;
+
+  if (_sideMount) {
+    // Side-slot: place in the empty ESPA port
+    const portAngle = (_sidePortIdx / N) * Math.PI * 2;
+    const sideRD    = ringR + primD / 2 + bracketGap;
+    primGrp.position.set(Math.cos(portAngle) * sideRD, 0, Math.sin(portAngle) * sideRD);
+    primGrp.rotation.y = -portAngle;
+    adapterGrp.visible = false; // revealed when solve starts
+  } else {
+    // Cake-topper: sit on top of the adapter cone
+    primGrp.position.set(0, primBotY + primH / 2, 0);
+    adapterGrp.visible = true;
+  }
+
+  // ── Ghost primary payload — blue cycling box, visible only during solve ──
+  // Only meaningful in side-mount mode; hidden otherwise.
+  if (cakeGhostGrp) espaGroup.remove(cakeGhostGrp);
+  const GHOST_SIZES = [[1.0,1.5,0.8],[1.5,2.5,1.2],[2.0,3.0,1.6],[1.2,2.0,1.0]];
+  const ghostFill = new THREE.MeshStandardMaterial({
+    color:0x0033bb, transparent:true, opacity:0, depthWrite:false, side:THREE.DoubleSide
+  });
+  const ghostWire = new THREE.LineBasicMaterial({color:0x4477ff, transparent:true, opacity:0});
+  const gGrp = new THREE.Group();
+  gGrp.add(new THREE.Mesh(new THREE.BoxGeometry(1,1,1), ghostFill));
+  gGrp.add(mkBoxWireframe(1, 1, 1, ghostWire));
+  gGrp.visible = false;
+  espaGroup.add(gGrp);
+  cakeGhostGrp = gGrp;
+  cakeGhostGrp._primBotY = primBotY;
+  cakeGhostGrp._sizes    = GHOST_SIZES;
+
   espaGroup.add(primGrp);
   primaryPayloadGrp = primGrp;
   // Store base opacities so the render loop can interpolate from them without compounding
@@ -1065,6 +1159,9 @@ function buildFairingScene(vIdx) {
   fairingGroup.visible = S.showFairing;
   espaGroup.visible    = S.showAdapters;
   mountGroup.visible   = false; // revealed after solve completes
+  // Pre-solve: show only the fairing + user's primary satellite; hide secondary payloads
+  payloadGroup.visible    = S.solved;
+  userPayloadMesh.visible = S.solved;
 
   // Cache per-frame render targets to avoid allocations in renderLoop
   userPayloadBodyMat = null;
@@ -1080,6 +1177,52 @@ function buildFairingScene(vIdx) {
   camTheta = 0.60;
   camTarget.set(0, 1.5, 0); // look slightly above centre
   updateCamera();
+  checkPayloadFit();
+}
+
+// ── Fairing interior radius at a given world-Y ───────────────
+// Mirrors the geometry constants hardcoded in buildFairingScene.
+function fairingRadiusAtWorldY(worldY) {
+  const R = 2.6, cylH = 5.0, coneH = 7.2, baseTransH = 1.0, aftR = 1.757, fairOffY = 0.7;
+  const localY   = worldY - fairOffY;
+  const aftFaceY = -cylH/2 - baseTransH;   // -3.5
+  const cylBotY  = -cylH/2;                // -2.5
+  const cylTopY  =  cylH/2;                //  2.5
+  if (localY < aftFaceY || localY > cylTopY + coneH) return 0;
+  if (localY <= cylBotY) {
+    const t = (localY - aftFaceY) / baseTransH;
+    return aftR + (R - aftR) * t;
+  }
+  if (localY <= cylTopY) return R;
+  const dist = localY - cylTopY;
+  const ogiveArcR = (R*R + coneH*coneH) / (2*R);
+  return Math.sqrt(Math.max(0, ogiveArcR*ogiveArcR - dist*dist)) - (ogiveArcR - R);
+}
+
+// ── Check whether the yellow payload box fits inside the fairing ──
+// Uses the corner diagonal (worst-case horizontal extent of a rectangular box).
+function checkPayloadFit() {
+  if (!primaryPayloadGrp || !S.showFairing) return;
+  const primW = S.envL/1000, primH = S.envH/1000, primD = S.envW/1000;
+  const centerY  = primaryPayloadGrp.position.y;
+  const botY     = centerY - primH/2;
+  const rCorner  = Math.sqrt((primW/2)**2 + (primD/2)**2); // max radial extent (box corner)
+
+  let fits = true;
+  const N = 32;
+  for (let i = 0; i <= N && fits; i++) {
+    const worldY = botY + (primH / N) * i;
+    if (rCorner > fairingRadiusAtWorldY(worldY)) fits = false;
+  }
+
+  primaryPayloadGrp.traverse(ch => {
+    if (ch.isMesh && ch.material) {
+      ch.material.color.set(fits ? 0xf59e0b : 0xef4444);
+      if (ch.material.emissive) ch.material.emissive.set(fits ? 0x000000 : 0x220000);
+    } else if (ch.isLine && ch.material) {
+      ch.material.color.set(fits ? 0xf5c518 : 0xff5555);
+    }
+  });
 }
 
 // ── Candidate meshes for playback ────────────────────────────
@@ -1208,6 +1351,20 @@ function renderLoop(){
     updateScrubberUI();
     updateAnnotationCounts();
     updateCandidateOpacities();
+  }
+
+  // Ghost primary payload: cycle through candidate sizes during solve
+  if (cakeGhostGrp && cakeGhostGrp.visible && S.pbPhase !== 'idle' && !S.solved) {
+    const t   = performance.now() / 1000;
+    const idx = Math.floor(t / 1.6) % cakeGhostGrp._sizes.length;
+    const [gw, gh, gd] = cakeGhostGrp._sizes[idx];
+    const pulse = 0.5 + 0.5 * Math.sin(t * 2.4);
+    cakeGhostGrp.scale.set(gw, gh, gd);
+    cakeGhostGrp.position.y = cakeGhostGrp._primBotY + gh / 2;
+    cakeGhostGrp.traverse(ch => {
+      if (ch.isMesh && ch.material)       ch.material.opacity = 0.04 + 0.04 * pulse;
+      else if (ch.isLine && ch.material)  ch.material.opacity = 0.18 + 0.28 * pulse;
+    });
   }
 
   // Animate manifest payloads + primary payload during solve
@@ -1600,6 +1757,15 @@ async function runSolve(){
   document.getElementById('ann-live').classList.add('show');
   autoRotate=false;
 
+  // Reveal secondary payloads now that the solve is running
+  if (payloadGroup)    payloadGroup.visible    = true;
+  if (userPayloadMesh) userPayloadMesh.visible = true;
+  // Side-mount mode: show adapter + ghost primary search
+  if (S._primSideMount) {
+    if (adapterGrpRef)  adapterGrpRef.visible  = true;
+    if (cakeGhostGrp)   cakeGhostGrp.visible   = true;
+  }
+
   S.pbPhase='seeding'; S.pbProgress=0; S.pbPlaying=true;
   S.pbSpeed=.5; S.pbStartTime=performance.now();
   document.getElementById('scr-play').textContent='❙❙';
@@ -1641,6 +1807,16 @@ function finishPlayback(){
   if(userPayloadMesh?._homePos){ const h=userPayloadMesh._homePos; userPayloadMesh.position.set(h.x,h.y,h.z); userPayloadMesh.rotation.y=h.rotY; }
   if(primaryPayloadGrp) primaryPayloadGrp.scale.setScalar(1);
   if(mountGroup) mountGroup.visible = true;
+  // Lock ghost to winning primary candidate (index 1 — medium sat, 1.5×2.5×1.2m)
+  if (cakeGhostGrp && S._primSideMount) {
+    const [gw, gh, gd] = cakeGhostGrp._sizes[1];
+    cakeGhostGrp.scale.set(gw, gh, gd);
+    cakeGhostGrp.position.y = cakeGhostGrp._primBotY + gh / 2;
+    cakeGhostGrp.traverse(ch => {
+      if (ch.isMesh && ch.material)      ch.material.opacity = 0.18;
+      else if (ch.isLine && ch.material) ch.material.opacity = 0.85;
+    });
+  }
 }
 
 function delay(ms){return new Promise(r=>setTimeout(r,ms));}
@@ -1713,6 +1889,49 @@ const FIELD_META = {
   alt:  { min:300, max:1200, hint:'300 – 1,200 km',  integer:true  },
   inc:  { min:0,   max:180,  hint:'0 – 180°',        integer:false },
 };
+
+// ── Envelope presets ─────────────────────────────────────────
+function setEnvPreset(name, l, w, h) {
+  [['l',l],['w',w],['h',h]].forEach(([ax,val]) => {
+    const num = document.getElementById('env-'+ax);
+    const sl  = document.getElementById('env-'+ax+'-sl');
+    if (num) num.value = val;
+    if (sl)  sl.value  = val;
+  });
+  // Highlight active chip
+  document.querySelectorAll('#env-presets .chip').forEach(c =>
+    c.classList.toggle('on', c.textContent === name));
+  updateEnvelope();
+}
+
+// ── Envelope slider ↔ number sync ───────────────────────────
+function onEnvSlider(ax) {
+  const num = document.getElementById('env-'+ax);
+  if (num) num.value = document.getElementById('env-'+ax+'-sl').value;
+  document.querySelectorAll('#env-presets .chip').forEach(c => c.classList.remove('on'));
+  updateEnvelope();
+}
+function onEnvNum(ax) {
+  const sl = document.getElementById('env-'+ax+'-sl');
+  if (sl) sl.value = document.getElementById('env-'+ax).value;
+  document.querySelectorAll('#env-presets .chip').forEach(c => c.classList.remove('on'));
+  updateEnvelope();
+}
+
+// ── Envelope (L × W × H) live update ────────────────────────
+let _envDebounceTimer = null;
+function updateEnvelope() {
+  function parseMM(id) {
+    const n = parseFloat(document.getElementById(id)?.value ?? '');
+    return (isNaN(n) || n <= 0) ? null : n;
+  }
+  const L = parseMM('env-l'), W = parseMM('env-w'), H = parseMM('env-h');
+  if (!L || !W || !H) return;
+  S.envL = L; S.envW = W; S.envH = H;
+  // Rebuild the scene 150ms after the user stops typing — simpler and correct for all 3 axes
+  clearTimeout(_envDebounceTimer);
+  _envDebounceTimer = setTimeout(() => buildFairingScene(S.selOpt), 150);
+}
 
 // Block keystrokes that produce invalid input for our numeric fields:
 //   e / E  — scientific notation (1e3) makes no sense in this UI
