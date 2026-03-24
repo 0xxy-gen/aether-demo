@@ -1382,8 +1382,8 @@ function renderLoop(){
       }
       // Lerp speed: snappy during sweep, graceful during convergence
       const lspd = p > 0.72 ? 1.6 : p > 0.35 ? 9.0 : 4.5;
-      // Combine manifest boxes + user payload into one shuffle pool
-      const allBoxes = userPayloadMesh ? [...payloadGroupGroups, userPayloadMesh] : payloadGroupGroups;
+      // Manifest boxes only — user payload stays fixed at its port (no blue box visits that slot)
+      const allBoxes = payloadGroupGroups;
       allBoxes.forEach((grp, i) => {
         const tGrp = allBoxes[perm[i]];
         if(!tGrp?._homePos) return;
@@ -1442,8 +1442,8 @@ function deterministicShuffle(arr, seed){
 }
 
 function buildShuffleSchedule(){
-  // +1 to include the user payload (cyan box) in the shuffle pool
-  const n = payloadGroupGroups.length + (userPayloadMesh ? 1 : 0);
+  // user payload is excluded — it stays fixed so no manifest box shuffles into its slot
+  const n = payloadGroupGroups.length;
   if(!n) return;
   const id = Array.from({length:n}, (_,i) => i);
   // Schedule: [progress threshold, permutation array]
