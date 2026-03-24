@@ -1770,6 +1770,7 @@ function finishPlayback(){
   // Lock ghost to winning primary candidate (index 1 — medium sat, 1.5×2.5×1.2m)
   if (cakeGhostGrp && S._primSideMount) {
     const [gw, gh, gd] = cakeGhostGrp._sizes[1];
+    cakeGhostGrp.visible = true;
     cakeGhostGrp.scale.set(gw, gh, gd);
     cakeGhostGrp.position.y = cakeGhostGrp._primBotY + gh / 2;
     cakeGhostGrp.traverse(ch => {
