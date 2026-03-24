@@ -943,9 +943,9 @@ function buildFairingScene(vIdx) {
 
   [-ringStep, 0, ringStep].forEach((ringY, ri) => {
     for(let pi = 0; pi < N; pi++){
-      // Always clear the middle ring at the user's port (cyan payload lives there);
+      // Always clear the top ring at the user's port (cyan payload lives there);
       // clear the whole column when side-mounted
-      if (pi === _sidePortIdx && (_sideMount || ri === 1)) continue;
+      if (pi === _sidePortIdx && (_sideMount || ri === 2)) continue;
 
       const a   = (pi / N) * Math.PI * 2;
       const sz  = ringSizes[ri][pi % ringSizes[ri].length];
@@ -1007,17 +1007,18 @@ function buildFairingScene(vIdx) {
 
   uGrp._radialDist = ringR + uD/2 + bracketGap;
   uGrp.position.copy(uDir).multiplyScalar(uGrp._radialDist);
+  uGrp.position.y = ringStep;   // top ring
   uGrp.rotation.y = -ua;
   // Store base opacities for proportional fade
   uGrp.traverse(ch => { if(ch.isMesh && ch.material) ch.material._baseOpacity = ch.material.opacity; });
   S.swapAngle = 0;
   userPayloadMesh = uGrp;
-  uGrp._homePos = {x:uGrp.position.x, y:0, z:uGrp.position.z, rotY:uGrp.rotation.y};
+  uGrp._homePos = {x:uGrp.position.x, y:ringStep, z:uGrp.position.z, rotY:uGrp.rotation.y};
 
-  // Bright connector line for user slot
+  // Bright connector line for user slot (top ring)
   payloadGroup.add(mkLine([
-    new THREE.Vector3(Math.cos(ua)*(ringR+ringThick), 0, Math.sin(ua)*(ringR+ringThick)),
-    new THREE.Vector3(Math.cos(ua)*(ringR+bracketGap), 0, Math.sin(ua)*(ringR+bracketGap)),
+    new THREE.Vector3(Math.cos(ua)*(ringR+ringThick), ringStep, Math.sin(ua)*(ringR+ringThick)),
+    new THREE.Vector3(Math.cos(ua)*(ringR+bracketGap), ringStep, Math.sin(ua)*(ringR+bracketGap)),
   ], new THREE.LineBasicMaterial({color:0x00d4ff, transparent:true, opacity:.8})));
 
   // ── 4b. PRIMARY PAYLOAD — cake topper: conical adapter + cuboid satellite ──
