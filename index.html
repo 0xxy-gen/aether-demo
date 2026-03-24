@@ -784,6 +784,13 @@ function buildVehicleFairingGeometry(v, fairingOffsetY) {
     });
     fairingGroup.add(new THREE.Mesh(new THREE.LatheGeometry(envProfile, 96), envelopeMat));
 
+    // Close the tip so the nose does not end in an open ring.
+    const noseCap = new THREE.Mesh(new THREE.CircleGeometry(tipR, 40), envelopeMat.clone());
+    noseCap.rotation.x = -Math.PI / 2;
+    noseCap.position.y = tipY;
+    fairingGroup.add(noseCap);
+    fairingGroup.add(mkRing(tipR, tipY, 40, wfFairing.clone()));
+
     fairingGroup.position.y = fairingOffsetY;
     currentFairingRadiusAtWorldY = worldY => radiusAtLocalY(worldY - fairingOffsetY);
     return { aftFaceY, aftR: R };
@@ -1326,6 +1333,51 @@ function fairingRadiusAtWorldY(worldY) {
   return currentFairingRadiusAtWorldY(worldY);
 }
 
+function getPayloadBody(group) {
+  return group?.children?.find(ch => ch.isMesh) || null;
+}
+
+function payloadGroupFitsInsideFairing(group) {
+  const body = getPayloadBody(group);
+  if (!body?.geometry) return true;
+
+  body.geometry.computeBoundingBox();
+  const bb = body.geometry.boundingBox;
+  const width = bb.max.x - bb.min.x;
+  const height = bb.max.y - bb.min.y;
+  const depth = bb.max.z - bb.min.z;
+  const centerY = group.position.y;
+  const botY = centerY - height / 2;
+  const centerR = Math.hypot(group.position.x, group.position.z);
+  const outerCornerR = centerR + Math.sqrt((width / 2) ** 2 + (depth / 2) ** 2);
+
+  for (let i = 0; i <= 32; i++) {
+    const worldY = botY + (height / 32) * i;
+    if (outerCornerR > fairingRadiusAtWorldY(worldY)) return false;
+  }
+  return true;
+}
+
+function setManifestPayloadFitState(group, fits) {
+  group.traverse(ch => {
+    if (ch.isMesh && ch.material) {
+      ch.material.color.set(fits ? 0x0a1a3a : 0x3b0b12);
+      if (ch.material.emissive) ch.material.emissive.set(fits ? 0x000000 : 0x3a0000);
+    } else if (ch.isLine && ch.material) {
+      ch.material.color.set(fits ? 0x2266cc : 0xff4d5c);
+    }
+  });
+}
+
+function updateManifestPayloadFitStates() {
+  if (!payloadGroupGroups.length) return;
+  if (!S.showFairing) {
+    payloadGroupGroups.forEach(group => setManifestPayloadFitState(group, true));
+    return;
+  }
+  payloadGroupGroups.forEach(group => setManifestPayloadFitState(group, payloadGroupFitsInsideFairing(group)));
+}
+
 function setPrimaryPayloadFitState(fits) {
   if (!primaryPayloadGrp) return;
   primaryPayloadGrp.traverse(ch => {
@@ -1341,38 +1393,25 @@ function setPrimaryPayloadFitState(fits) {
 // ── Check whether the rendered yellow payload box fits inside the fairing ──
 function checkPayloadFit() {
   if (!primaryPayloadGrp) {
+    updateManifestPayloadFitStates();
     updateCubeSatDeployerHint();
     return;
   }
   if (!S.showFairing) {
+    updateManifestPayloadFitStates();
     setPrimaryPayloadFitState(true);
     updateCubeSatDeployerHint();
     return;
   }
 
-  const body = primaryPayloadGrp.children.find(ch => ch.isMesh);
-  if (!body?.geometry) {
+  if (!getPayloadBody(primaryPayloadGrp)?.geometry) {
+    updateManifestPayloadFitStates();
     updateCubeSatDeployerHint();
     return;
   }
 
-  body.geometry.computeBoundingBox();
-  const bb = body.geometry.boundingBox;
-  const primW = bb.max.x - bb.min.x;
-  const primH = bb.max.y - bb.min.y;
-  const primD = bb.max.z - bb.min.z;
-  const centerY = primaryPayloadGrp.position.y;
-  const botY = centerY - primH / 2;
-  const centerR = Math.hypot(primaryPayloadGrp.position.x, primaryPayloadGrp.position.z);
-  const rCorner = centerR + Math.sqrt((primW / 2) ** 2 + (primD / 2) ** 2);
-
-  let fits = true;
-  const N = 32;
-  for (let i = 0; i <= N && fits; i++) {
-    const worldY = botY + (primH / N) * i;
-    if (rCorner > fairingRadiusAtWorldY(worldY)) fits = false;
-  }
-  setPrimaryPayloadFitState(fits);
+  updateManifestPayloadFitStates();
+  setPrimaryPayloadFitState(payloadGroupFitsInsideFairing(primaryPayloadGrp));
   updateCubeSatDeployerHint();
 }
 
@@ -1574,6 +1613,8 @@ function renderLoop(){
       }
     }
   }
+
+  checkPayloadFit();
 
   renderer.render(scene, camera);
 }
