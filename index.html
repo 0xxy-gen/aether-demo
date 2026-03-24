@@ -1159,9 +1159,9 @@ function buildFairingScene(vIdx) {
   fairingGroup.visible = S.showFairing;
   espaGroup.visible    = S.showAdapters;
   mountGroup.visible   = false; // revealed after solve completes
-  // Pre-solve: show only the fairing + user's primary satellite; hide secondary payloads
-  payloadGroup.visible    = S.solved;
-  userPayloadMesh.visible = S.solved;
+  // Manifest ghosts always visible; user payload always visible
+  payloadGroup.visible    = true;
+  userPayloadMesh.visible = true;
 
   // Cache per-frame render targets to avoid allocations in renderLoop
   userPayloadBodyMat = null;
