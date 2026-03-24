@@ -237,18 +237,18 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tp);font-
       </div>
       <div class="env-row">
         <span class="env-lbl">L</span>
-        <input type="range" class="frange" id="env-l-sl" min="50" max="3000" value="1200" oninput="onEnvSlider('l')">
-        <input type="number" class="env-num" id="env-l" min="50" max="3000" value="1200" oninput="onEnvNum('l')">
+        <input type="range" class="frange" id="env-l-sl" min="50" max="3000" value="2300" oninput="onEnvSlider('l')">
+        <input type="number" class="env-num" id="env-l" min="50" max="3000" value="2300" oninput="onEnvNum('l')">
       </div>
       <div class="env-row">
         <span class="env-lbl">W</span>
-        <input type="range" class="frange" id="env-w-sl" min="50" max="3000" value="800" oninput="onEnvSlider('w')">
-        <input type="number" class="env-num" id="env-w" min="50" max="3000" value="800" oninput="onEnvNum('w')">
+        <input type="range" class="frange" id="env-w-sl" min="50" max="3000" value="2400" oninput="onEnvSlider('w')">
+        <input type="number" class="env-num" id="env-w" min="50" max="3000" value="2400" oninput="onEnvNum('w')">
       </div>
       <div class="env-row">
         <span class="env-lbl">H</span>
-        <input type="range" class="frange" id="env-h-sl" min="50" max="5000" value="650" oninput="onEnvSlider('h')">
-        <input type="number" class="env-num" id="env-h" min="50" max="5000" value="650" oninput="onEnvNum('h')">
+        <input type="range" class="frange" id="env-h-sl" min="50" max="5000" value="4200" oninput="onEnvSlider('h')">
+        <input type="number" class="env-num" id="env-h" min="50" max="5000" value="4200" oninput="onEnvNum('h')">
       </div>
     </div>
     <div class="field"><div class="field-label">Target Orbit</div><div class="chip-g"><div class="chip on" onclick="sc(this,'orbit')">SSO</div><div class="chip" onclick="sc(this,'orbit')">LEO</div><div class="chip" onclick="sc(this,'orbit')">MEO</div><div class="chip" onclick="sc(this,'orbit')">GTO</div></div></div>
@@ -384,7 +384,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tp);font-
 // ══════════════════════════════════════════════════════════════
 const S = {
   mass:682, alt:550, inc:97.8, iface:'6U ISIPOD',
-  envL:1200, envW:800, envH:650,   // payload envelope (mm)
+  envL:2300, envW:2400, envH:4200,   // payload envelope (mm)
   view:'iso', solved:false, showFairing:true, showAdapters:true, showMass:false,
   selOpt:0,
   pbPhase:'idle', pbProgress:0, pbPlaying:false, pbSpeed:0.5,
@@ -1371,8 +1371,9 @@ function renderLoop(){
       });
     }
 
-    // Primary payload: always fully visible on the cake-top — never hidden or shrunk
+    // Primary payload: always fully visible — never hidden or shrunk
     if(primaryPayloadGrp){
+      primaryPayloadGrp.visible = true;
       primaryPayloadGrp.scale.setScalar(1);
       if(!S.solved){
         primaryPayloadGrp.traverse(ch=>{
@@ -1765,7 +1766,7 @@ function finishPlayback(){
   // Snap manifest payloads and primary payload to final resting state
   if(payloadGroup) payloadGroupGroups.forEach(grp=>{ if(grp._homePos){ grp.position.set(grp._homePos.x,grp._homePos.y,grp._homePos.z); grp.rotation.y=grp._homePos.rotY; }});
   if(userPayloadMesh?._homePos){ const h=userPayloadMesh._homePos; userPayloadMesh.position.set(h.x,h.y,h.z); userPayloadMesh.rotation.y=h.rotY; }
-  if(primaryPayloadGrp) primaryPayloadGrp.scale.setScalar(1);
+  if(primaryPayloadGrp){ primaryPayloadGrp.visible = true; primaryPayloadGrp.scale.setScalar(1); }
   if(mountGroup) mountGroup.visible = true;
   // Lock ghost to winning primary candidate (index 1 — medium sat, 1.5×2.5×1.2m)
   if (cakeGhostGrp && S._primSideMount) {
