@@ -981,44 +981,7 @@ function buildFairingScene(vIdx) {
     }
   });
 
-  // ── 4. USER PAYLOAD — bright cyan wireframe ────────────────
-  const userPort = v.payloads.find(p=>!p.occupied)?.portIdx ?? 0;
-  const ua   = (userPort / N) * Math.PI * 2;
-  const uDir = new THREE.Vector3(Math.cos(ua), 0, Math.sin(ua));
-  // Fixed secondary-payload size (ESPA 6U class) — not driven by Envelope field
-  const uW=0.74, uH=0.64, uD=0.54;
-
-  const uGrp = new THREE.Group();
-  // Semi-transparent fill
-  const uGeo = new THREE.BoxGeometry(uW, uH, uD);
-  uGrp.add(new THREE.Mesh(uGeo, wfUserBody.clone()));
-  // Bright edge wireframe
-  uGrp.add(mkBoxWireframe(uW, uH, uD, wfUserEdge.clone()));
-
-  // Horizontal scan lines inside box (holographic feel)
-  for(let li=0;li<5;li++){
-    const yOff = -uH*.38 + (uH*.76/4)*li;
-    uGrp.add(mkLine([
-      new THREE.Vector3(-uW*.44, yOff, uD/2+.002),
-      new THREE.Vector3( uW*.44, yOff, uD/2+.002),
-    ], new THREE.LineBasicMaterial({color:0x00d4ff, transparent:true, opacity:.4})));
-  }
-
-  uGrp._radialDist = ringR + uD/2 + bracketGap;
-  uGrp.position.copy(uDir).multiplyScalar(uGrp._radialDist);
-  uGrp.position.y = 0;   // middle ring
-  uGrp.rotation.y = -ua;
-  // Store base opacities for proportional fade
-  uGrp.traverse(ch => { if(ch.isMesh && ch.material) ch.material._baseOpacity = ch.material.opacity; });
-  S.swapAngle = 0;
-  userPayloadMesh = uGrp;
-  uGrp._homePos = {x:uGrp.position.x, y:0, z:uGrp.position.z, rotY:uGrp.rotation.y};
-
-  // Bright connector line for user slot (middle ring)
-  payloadGroup.add(mkLine([
-    new THREE.Vector3(Math.cos(ua)*(ringR+ringThick), 0, Math.sin(ua)*(ringR+ringThick)),
-    new THREE.Vector3(Math.cos(ua)*(ringR+bracketGap), 0, Math.sin(ua)*(ringR+bracketGap)),
-  ], new THREE.LineBasicMaterial({color:0x00d4ff, transparent:true, opacity:.8})));
+  userPayloadMesh = null; // cyan secondary removed — primary (yellow) is the user's payload
 
   // ── 4b. PRIMARY PAYLOAD — cake topper: conical adapter + cuboid satellite ──
   const topRingTopY = ringStep + collarH / 2 + flangeH;
@@ -1155,17 +1118,14 @@ function buildFairingScene(vIdx) {
   massGroup.visible = S.showMass;
 
   // ── 6. ASSEMBLE ────────────────────────────────────────────
-  scene.add(fairingGroup, espaGroup, payloadGroup, userPayloadMesh, massGroup, mountGroup);
+  scene.add(fairingGroup, espaGroup, payloadGroup, massGroup, mountGroup);
   fairingGroup.visible = S.showFairing;
   espaGroup.visible    = S.showAdapters;
   mountGroup.visible   = false; // revealed after solve completes
-  // Manifest ghosts always visible; user payload always visible
-  payloadGroup.visible    = true;
-  userPayloadMesh.visible = true;
+  payloadGroup.visible = true;
 
   // Cache per-frame render targets to avoid allocations in renderLoop
   userPayloadBodyMat = null;
-  userPayloadMesh.traverse(ch => { if(ch.isMesh && ch.material && ch.material.emissiveIntensity !== undefined) userPayloadBodyMat = ch.material; });
   payloadGroupGroups = payloadGroup.children.filter(ch => ch.isGroup);
   // Store home positions so the shuffle animation knows where to lerp back to
   payloadGroupGroups.forEach(grp => {
