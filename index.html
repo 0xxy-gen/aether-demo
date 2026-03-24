@@ -15,7 +15,7 @@
   --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
 }
 html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tp);font-family:var(--mono);font-size:12px}
-.shell{display:grid;grid-template-rows:38px 1fr auto 36px;height:100vh}
+.shell{display:grid;grid-template-rows:38px 1fr auto 36px;height:100vh;height:100dvh}
 .topbar{background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:16px;font-size:10px;letter-spacing:.1em;color:var(--ts)}
 .topbar-logo{color:var(--acc);font-weight:600;font-size:11px;letter-spacing:.18em}
 .topbar-sep{width:1px;height:16px;background:var(--border2)}
@@ -38,6 +38,11 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tp);font-
 .fnum{width:48px;background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--acc);font-family:var(--mono);font-size:10px;text-align:right;outline:none;padding:0 1px;-moz-appearance:textfield}
 .fnum::-webkit-inner-spin-button,.fnum::-webkit-outer-spin-button{-webkit-appearance:none}
 .fnum:focus{border-bottom-color:var(--acc)}
+.fnum.err,.fnum.err:focus{border-bottom-color:var(--crit);color:var(--crit)}
+.fnum.warn,.fnum.warn:focus{border-bottom-color:var(--warn)}
+.field-err{font-size:8px;letter-spacing:.06em;margin-top:3px;display:none;padding:0 1px;color:var(--crit)}
+.field-err.warn{color:var(--warn)}
+.field-err.show{display:block}
 .finput{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:2px;padding:6px 9px;color:var(--tp);font-family:var(--mono);font-size:11px;outline:none;transition:border-color .12s}
 .finput:focus{border-color:var(--acc)}
 .fselect{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:2px;padding:6px 9px;color:var(--tp);font-family:var(--mono);font-size:11px;outline:none;appearance:none;cursor:pointer}
@@ -58,7 +63,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tp);font-
 .cst-detail{font-size:8px;color:var(--td);width:90px;text-align:right;flex-shrink:0}
 .cst-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
 .cst-dot.pass{background:var(--pass)}.cst-dot.warn{background:var(--warn)}.cst-dot.fail{background:var(--crit)}
-.run-btn{margin:10px 14px 14px;width:calc(100% - 28px);background:var(--acc);color:#000;border:none;border-radius:2px;padding:9px;font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .15s}
+:root{--on-acc:#000}
+.run-btn{margin:10px 14px 14px;width:calc(100% - 28px);background:var(--acc);color:var(--on-acc);border:none;border-radius:2px;padding:9px;font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .15s}
 .run-btn:disabled{opacity:.4;cursor:not-allowed}
 .run-btn:not(:disabled):hover{opacity:.9}
 
@@ -97,6 +103,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tp);font-
 .solve-lbl{font-size:10px;color:var(--ts);letter-spacing:.1em}
 
 .config-rail{display:flex;gap:6px;padding:8px 14px;border-top:1px solid var(--border);background:var(--surface);overflow-x:auto;flex-shrink:0;scrollbar-width:none;z-index:2}
+.config-rail::-webkit-scrollbar{display:none}
 .config-thumb{flex-shrink:0;width:44px;height:44px;border:1px solid var(--border2);border-radius:2px;cursor:pointer;transition:all .12s;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px}
 .config-thumb.active,.config-thumb:hover{border-color:var(--acc)}
 .config-thumb-lbl{font-size:7px;letter-spacing:.06em;color:var(--td);text-transform:uppercase}
@@ -155,6 +162,15 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tp);font-
 .act-btn.primary{border-color:var(--acc);color:var(--acc);background:rgba(0,212,255,.05)}
 .empty{padding:28px 16px;text-align:center;color:var(--td);font-size:9px;letter-spacing:.1em;text-transform:uppercase;line-height:2}
 
+/* ── RIGHT-PANEL LOADING SKELETON ── */
+.rp-loading{padding:10px 12px;display:flex;flex-direction:column;gap:10px}
+.rp-loading-hdr{font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--td);padding:6px 2px}
+.skel-card{background:var(--surface);border:1px solid var(--border2);border-radius:2px;overflow:hidden;padding:12px}
+.skel-bar{height:7px;border-radius:2px;background:var(--border2);margin-bottom:8px;animation:skelPulse 1.4s ease-in-out infinite}
+.skel-bar.w30{width:30%}.skel-bar.w50{width:50%}.skel-bar.w70{width:70%}.skel-bar.w90{width:90%}
+.skel-bar:nth-child(2){animation-delay:.15s}.skel-bar:nth-child(3){animation-delay:.3s}.skel-bar:nth-child(4){animation-delay:.45s}
+@keyframes skelPulse{0%,100%{opacity:.3}50%{opacity:.7}}
+
 /* ── TRACE DRAWER ── */
 .trace-drawer{position:fixed;bottom:36px;left:0;right:0;height:240px;background:var(--surface);border-top:1px solid var(--border2);z-index:100;transform:translateY(100%);transition:transform .2s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column}
 .trace-drawer.open{transform:translateY(0)}
@@ -168,8 +184,11 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tp);font-
 .trace-line .msg{color:var(--ts)}.trace-line .msg b{color:var(--tp)}
 .trace-sub{padding:1px 0 1px 22px;color:var(--td);font-size:9px}
 .trace-div{border-top:1px solid var(--border);margin:6px 0}
-.empty{padding:28px 16px;text-align:center;color:var(--td);font-size:9px;letter-spacing:.1em;text-transform:uppercase;line-height:2}
 ::-webkit-scrollbar{width:3px;height:3px}
+@media(prefers-reduced-motion:reduce){
+  .status-dot{animation:none;opacity:1}
+  .solve-ring{animation:none}
+}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
 </style>
 </head>
@@ -197,25 +216,22 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tp);font-
       <div class="panel-hdr-label">01 / Mission Parameters</div>
       <div class="panel-hdr-title">Payload + Orbital Definition</div>
     </div>
-    <div class="field"><div class="field-label">Payload Mass <span class="field-val"><input type="number" class="fnum" id="num-mass" min="1" max="400" value="142" oninput="vmn('mass',this)"> kg</span></div><input type="range" class="frange" id="rng-mass" min="1" max="400" value="142" oninput="vm('mass',this.value)"></div>
-    <div class="field"><div class="field-label">Envelope (L × W × H)</div><div class="frow"><input class="finput" value="366 mm"><input class="finput" value="226 mm"></div><div style="margin-top:5px"><input class="finput" value="100 mm" style="width:100%"></div></div>
+    <div class="field"><div class="field-label">Payload Mass <span class="field-val"><input type="number" class="fnum" id="num-mass" min="1" max="400" value="682" oninput="vmn('mass',this)" onkeydown="vmKey(event,'mass')" onblur="vmnBlur('mass',this)"> kg</span></div><div class="field-err" id="err-mass"></div></div>
+    <div class="field"><div class="field-label">Envelope (L × W × H)</div><div class="frow"><input class="finput" value="1,200 mm"><input class="finput" value="850 mm"></div><div style="margin-top:5px"><input class="finput" value="650 mm" style="width:100%"></div></div>
     <div class="field"><div class="field-label">Target Orbit</div><div class="chip-g"><div class="chip on" onclick="sc(this,'orbit')">SSO</div><div class="chip" onclick="sc(this,'orbit')">LEO</div><div class="chip" onclick="sc(this,'orbit')">MEO</div><div class="chip" onclick="sc(this,'orbit')">GTO</div></div></div>
-    <div class="field"><div class="field-label">Altitude <span class="field-val"><input type="number" class="fnum" id="num-alt" min="300" max="1200" value="525" oninput="vmn('alt',this)"> km</span></div><input type="range" class="frange" id="rng-alt" min="300" max="1200" value="525" oninput="vm('alt',this.value)"></div>
-    <div class="field"><div class="field-label">Inclination <span class="field-val"><input type="number" class="fnum" id="num-inc" min="0" max="105" step="0.1" value="97.4" oninput="vmn('inc',this)">°</span></div><input type="range" class="frange" id="rng-inc" min="0" max="105" step="0.1" value="97.4" oninput="vm('inc',this.value)"></div>
-    <div class="field"><div class="field-label">RAAN Window (° ± tol)</div><div class="frow"><input class="finput" value="82.4°"><input class="finput" value="± 20°"></div></div>
+    <div class="field"><div class="field-label">Altitude <span class="field-val"><input type="number" class="fnum" id="num-alt" min="300" max="1200" value="550" oninput="vmn('alt',this)" onkeydown="vmKey(event,'alt')" onblur="vmnBlur('alt',this)"> km</span></div><div class="field-err" id="err-alt"></div></div>
+    <div class="field"><div class="field-label">Inclination <span class="field-val"><input type="number" class="fnum" id="num-inc" min="0" max="180" step="0.1" value="97.8" oninput="vmn('inc',this)" onkeydown="vmKey(event,'inc')" onblur="vmnBlur('inc',this)">°</span></div><div class="field-err" id="err-inc"></div></div>
+    <div class="field"><div class="field-label">RAAN Window (° ± tol)</div><div class="frow"><input class="finput" value="LTAN 10:30"><input class="finput" value="± 15°"></div></div>
     <div class="field"><div class="field-label">Launch Window</div><div class="frow"><input class="finput" value="2026-07-01"><input class="finput" value="2026-09-30"></div></div>
-    <div class="field"><div class="field-label">Rideshare Mode</div><div class="chip-g"><div class="chip" onclick="sc(this,'rs')">Primary</div><div class="chip on" onclick="sc(this,'rs')">Rideshare</div><div class="chip" onclick="sc(this,'rs')">Dispenser Only</div></div></div>
-    <div class="field"><div class="field-label">Regulatory Regime</div><select class="fselect"><option>FCC / NOAA (US)</option><option>ITU Coordination</option><option>ESA Licensing (EU)</option><option>ITAR-restricted</option><option>None specified</option></select></div>
+<div class="field"><div class="field-label">Regulatory Regime</div><select class="fselect"><option>FCC / NOAA (US)</option><option>ITU Coordination</option><option>ESA Licensing (EU)</option><option selected>ITAR-restricted</option><option>None specified</option></select></div>
     <div class="cst-section">
       <div class="cst-title">Constraint Status</div>
-      <div class="cst-row" onclick="openTrace()"><div class="cst-name">MASS</div><div class="cst-bar-wrap"><div class="cst-bar" style="width:71%;background:var(--pass)"></div></div><div class="cst-detail">142 / 200 kg</div><div class="cst-dot pass"></div></div>
-      <div class="cst-row" onclick="openTrace()"><div class="cst-name">VOLUME</div><div class="cst-bar-wrap"><div class="cst-bar" style="width:65%;background:var(--pass)"></div></div><div class="cst-detail">0.34 / 0.52 m³</div><div class="cst-dot pass"></div></div>
-      <div class="cst-row" onclick="openTrace()"><div class="cst-name">INTERFACE</div><div class="cst-bar-wrap"><div class="cst-bar" style="width:100%;background:var(--pass)"></div></div><div class="cst-detail">6U ISIPOD ✓</div><div class="cst-dot pass"></div></div>
+      <div class="cst-row" onclick="openTrace()"><div class="cst-name">MASS</div><div class="cst-bar-wrap"><div class="cst-bar" style="width:68%;background:var(--pass)"></div></div><div class="cst-detail">682 / 1,000 kg</div><div class="cst-dot pass"></div></div>
+      <div class="cst-row" onclick="openTrace()"><div class="cst-name">VOLUME</div><div class="cst-bar-wrap"><div class="cst-bar" style="width:55%;background:var(--pass)"></div></div><div class="cst-detail">0.66 / 1.20 m³</div><div class="cst-dot pass"></div></div>
       <div class="cst-row" onclick="openTrace()"><div class="cst-name">ORBIT</div><div class="cst-bar-wrap"><div class="cst-bar" style="width:98%;background:var(--pass)"></div></div><div class="cst-detail">+0.2° tol</div><div class="cst-dot pass"></div></div>
       <div class="cst-row" onclick="openTrace()"><div class="cst-name">RAAN</div><div class="cst-bar-wrap"><div class="cst-bar" style="width:82%;background:var(--pass)"></div></div><div class="cst-detail">ΔΩ 14.3°</div><div class="cst-dot pass"></div></div>
       <div class="cst-row" onclick="openTrace()"><div class="cst-name">SCHEDULE</div><div class="cst-bar-wrap"><div class="cst-bar" style="width:89%;background:var(--pass)"></div></div><div class="cst-detail">T-180 days</div><div class="cst-dot pass"></div></div>
       <div class="cst-row" onclick="openTrace()"><div class="cst-name">REGULATORY</div><div class="cst-bar-wrap"><div class="cst-bar" style="width:60%;background:var(--warn)"></div></div><div class="cst-detail">FCC STA req.</div><div class="cst-dot warn"></div></div>
-      <div class="cst-row" onclick="openTrace()"><div class="cst-name">SEPARATION</div><div class="cst-bar-wrap"><div class="cst-bar" style="width:100%;background:var(--pass)"></div></div><div class="cst-detail">No conflicts</div><div class="cst-dot pass"></div></div>
     </div>
     <button class="run-btn" id="run-btn" onclick="runSolve()"><svg width="10" height="10" viewBox="0 0 10 10"><polygon points="1,0.5 9.5,5 1,9.5" fill="currentColor"/></svg>RUN OPTIMISATION</button>
   </div>
@@ -227,9 +243,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tp);font-
       <button class="vp-btn on" id="vb-3d" onclick="setView('iso')">ISO</button>
       <button class="vp-btn" id="vb-xs" onclick="setView('top')">Top</button>
       <button class="vp-btn" id="vb-pl" onclick="setView('side')">Side</button>
-      <button class="vp-btn on" id="vb-tr" onclick="toggleFairingShell()">Fairing</button>
-      <button class="vp-btn on" id="vb-ad" onclick="toggleAdapters()">Adapters</button>
-      <button class="vp-btn" id="vb-ma" onclick="toggleMass()">Mass CG</button>
+      <button class="vp-btn on" id="vb-tr" onclick="toggleFairingShell()" aria-pressed="true">Fairing</button>
+      <button class="vp-btn" id="vb-ma" onclick="toggleMass()" aria-pressed="false">Mass CG</button>
       <span style="margin-left:auto;font-size:9px;color:var(--td);letter-spacing:.06em" id="vp-vehicle-lbl">— AWAITING SOLVE —</span>
     </div>
     <div class="vp-canvas-wrap">
@@ -263,8 +278,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tp);font-
         <div class="ann-title">Manifest Utilisation</div>
         <div class="ann-row"><span>Mass fraction</span><span id="an-mf">—</span></div>
         <div class="ann-row"><span>Volume fraction</span><span id="an-vf">—</span></div>
-        <div class="ann-row"><span>Slot utilisation</span><span id="an-sl">—</span></div>
-        <div class="ann-row"><span>ΔV margin</span><span id="an-dv">—</span></div>
+        <div class="ann-row"><span>Injection ΔV margin</span><span id="an-dv">—</span></div>
         <div class="ann-row"><span>Structural margin</span><span id="an-str">—</span></div>
       </div>
     </div>
@@ -290,9 +304,9 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tp);font-
 <!-- SCRUBBER -->
 <div class="scrubber" id="scrubber">
   <div class="scrubber-top">
-    <button class="scr-btn play-pause" id="scr-play" onclick="pbTogglePlay()">▶</button>
-    <button class="scr-btn" onclick="pbStep(-1)">←</button>
-    <button class="scr-btn" onclick="pbStep(1)">→</button>
+    <button class="scr-btn play-pause" id="scr-play" onclick="pbTogglePlay()" aria-label="Play">▶</button>
+    <button class="scr-btn" onclick="pbStep(-1)" aria-label="Step back">←</button>
+    <button class="scr-btn" onclick="pbStep(1)" aria-label="Step forward">→</button>
     <div class="scr-track-wrap"><div class="scr-track" id="scr-track" onclick="pbScrubClick(event)"><div class="scr-fill" id="scr-fill" style="width:0%"></div><div class="scr-handle" id="scr-handle" style="left:0%"></div></div></div>
     <div class="scr-right">
       <button class="speed-btn on" onclick="setSpeed(this,.5)">0.5×</button>
@@ -336,22 +350,24 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tp);font-
 // STATE
 // ══════════════════════════════════════════════════════════════
 const S = {
-  mass:142, alt:525, inc:97.4, iface:'6U ISIPOD',
+  mass:682, alt:550, inc:97.8, iface:'6U ISIPOD',
   view:'iso', solved:false, showFairing:true, showAdapters:true, showMass:false,
   selOpt:0,
   pbPhase:'idle', pbProgress:0, pbPlaying:false, pbSpeed:0.5,
   pbStartTime:null, pbAnimId:null, pbCandidates:[],
   pbSurvivors:[], pbOptIdx:null,
+  swapAngle:0,         // current interpolated angle of the satellite on the ESPA ring
+  shuffleSchedule:null, // [{progress, permutation}] — payload box shuffle events
 };
 
 // ══════════════════════════════════════════════════════════════
 // VEHICLE DATA
 // ══════════════════════════════════════════════════════════════
 const VEHICLES = [
-  { name:'Falcon 9 Block 5', provider:'SpaceX', manifest:'Transporter-12',
+  { name:'Falcon 9 Block 5', provider:'SpaceX', manifest:'',
     window:'2026-09-14 → 2026-09-28', orbit:'SSO 525km · 97.6°',
     fairR:2.6, fairH:13.1, compat:94.2, price:'$4.2M ± 12%',
-    schedProb:.81, risk:'LOW', deployer:'6U ISIPOD × 2', dvMargin:'42 m/s',
+    schedProb:.81, risk:'LOW', deployer:'CarboNIX 15" Sep. Ring', dvMargin:'42 m/s',
     util:.784, volFrac:.621, slots:'3 / 8', strMarg:'1.4×', color:0x00d4ff,
     espaR:1.55, nPorts:6,
     payloads:[
@@ -363,9 +379,9 @@ const VEHICLES = [
       {portIdx:5, w:0.0,  h:0.0,  d:0.0,  mass:0,   cls:'',     occupied:false},
     ]
   },
-  { name:'Electron Kick Stage', provider:'Rocket Lab', manifest:'RS-12',
+  { name:'Neutron (Maiden Flight)', provider:'Rocket Lab', manifest:'',
     window:'2026-10-02 → 2026-10-18', orbit:'SSO 520km · 97.5°',
-    fairR:.6, fairH:2.5, compat:87.1, price:'$1.8M ± 8%',
+    fairR:.6, fairH:2.5, compat:87.1, price:'$1.8M ±15%',
     schedProb:.76, risk:'LOW-MED', deployer:'Custom', dvMargin:'18 m/s',
     util:.502, volFrac:.40, slots:'1 / 3', strMarg:'1.6×', color:0x00e5a0,
     espaR:0.35, nPorts:3,
@@ -399,7 +415,6 @@ const canvas = document.getElementById('three-canvas');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setClearColor(0x08090d, 1);
-renderer.shadowMap.enabled = true;
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 200);
@@ -460,9 +475,13 @@ function updateCamera(){
 updateCamera();
 
 // ── Scene objects registry ───────────────────────────────────
-let fairingGroup = null, payloadGroup = null, espaGroup = null, massGroup = null;
+let fairingGroup = null, payloadGroup = null, espaGroup = null, massGroup = null, mountGroup = null;
 let candidateMeshes = [];
 let userPayloadMesh = null;
+let primaryPayloadGrp = null;
+// Cached references updated after buildFairingScene to avoid per-frame traversal
+let userPayloadBodyMat = null;   // the single MeshStandardMaterial on the user payload box
+let payloadGroupGroups = [];     // payloadGroup.children that are Groups (pre-filtered)
 
 // ── Pure wireframe materials ───────────────────────────────────
 // No solid surfaces — everything is lines only, like the reference image.
@@ -499,8 +518,9 @@ function mkBoxWireframe(w, h, d, mat){
   return grp;
 }
 
+
 function buildFairingScene(vIdx) {
-  [fairingGroup, payloadGroup, espaGroup, massGroup].forEach(g=>{ if(g) scene.remove(g); });
+  [fairingGroup, payloadGroup, espaGroup, massGroup, mountGroup].forEach(g=>{ if(g) scene.remove(g); });
   if(userPayloadMesh) scene.remove(userPayloadMesh);
 
   const v  = VEHICLES[vIdx];
@@ -511,6 +531,7 @@ function buildFairingScene(vIdx) {
   payloadGroup = new THREE.Group();
   espaGroup    = new THREE.Group();
   massGroup    = new THREE.Group();
+  mountGroup   = new THREE.Group();
 
   // ── 1. FAIRING — Falcon 9 precise geometry from IGS ─────────
   // Dimensions extracted from falcon_9_fairing.IGS (SolidWorks, units: inches)
@@ -858,40 +879,54 @@ function buildFairingScene(vIdx) {
   const ringR     = collarR;
   const ringThick = wallThick;
 
-  // ── 3. MANIFEST PAYLOADS — wireframe boxes at port angles ─
-  const bracketGap = 0.22;  // wider gap → more fairing wall clearance
+  // ── 3. MANIFEST PAYLOADS — one box per hole, one ring per ESPA tier ─
+  const bracketGap = 0.22;
 
-  v.payloads.forEach(p => {
-    const a   = (p.portIdx / N) * Math.PI * 2;
-    const dir = new THREE.Vector3(Math.cos(a), 0, Math.sin(a));
-    const defaultSize = {w:.58, h:.52, d:.46};
-    const pw = p.occupied ? p.w : defaultSize.w;
-    const ph = p.occupied ? p.h : defaultSize.h;
-    const pd = p.occupied ? p.d : defaultSize.d;
+  // Per-ring size tables — each ring has a clearly distinct payload class profile
+  // Bottom ring: large ESPA-Grande / ESPA-Standard class
+  // Middle ring: mixed mid-size (12U / 6U)
+  // Top ring:    small nanosats (3U / 6U compact)
+  const ringSizes = [
+    [{w:1.28,h:1.14,d:1.06},{w:1.10,h:1.00,d:0.92},{w:1.22,h:1.08,d:1.00},{w:1.35,h:1.20,d:1.10},{w:1.05,h:0.96,d:0.88},{w:1.18,h:1.06,d:0.98}], // bottom — ESPA-Grande
+    [{w:0.92,h:0.82,d:0.76},{w:0.68,h:0.60,d:0.54},{w:0.86,h:0.76,d:0.68},{w:0.92,h:0.82,d:0.76},{w:0.78,h:0.70,d:0.62},{w:0.68,h:0.60,d:0.54}], // middle — 12U / 6U
+    [{w:0.44,h:0.40,d:0.34},{w:0.56,h:0.50,d:0.44},{w:0.44,h:0.40,d:0.34},{w:0.50,h:0.46,d:0.38},{w:0.44,h:0.40,d:0.34},{w:0.56,h:0.50,d:0.44}], // top — 3U / 6U compact
+  ];
 
-    const radialDist = ringR + pd/2 + bracketGap;
+  [-ringStep, 0, ringStep].forEach((ringY, ri) => {
+    for(let pi = 0; pi < N; pi++){
+      const a   = (pi / N) * Math.PI * 2;
+      const sz  = ringSizes[ri][pi % ringSizes[ri].length];
+      const pw = sz.w, ph = sz.h, pd = sz.d;
 
-    // Semi-transparent box body
-    const pGeo = new THREE.BoxGeometry(pw, ph, pd);
-    const pBody = new THREE.Mesh(pGeo, p.occupied ? wfPayBody.clone() : new THREE.MeshStandardMaterial({color:0x050d1a, transparent:true, opacity:.15, side:THREE.DoubleSide, depthWrite:false}));
-    const pGrp = new THREE.Group();
-    pGrp.add(pBody);
+      const radialDist = ringR + pd/2 + bracketGap;
 
-    // Wireframe edges
-    const edgeMat = p.occupied
-      ? wfPayEdge.clone()
-      : new THREE.LineBasicMaterial({color:0x1a3a6a, transparent:true, opacity:.3});
-    pGrp.add(mkBoxWireframe(pw, ph, pd, edgeMat));
+      const pGeo = new THREE.BoxGeometry(pw, ph, pd);
+      const pBody = new THREE.Mesh(pGeo, wfPayBody.clone());
+      const pGrp = new THREE.Group();
+      pGrp.add(pBody);
+      pGrp.add(mkBoxWireframe(pw, ph, pd, wfPayEdge.clone()));
 
-    pGrp.position.copy(dir).multiplyScalar(radialDist);
-    pGrp.rotation.y = -a;
-    payloadGroup.add(pGrp);
+      pGrp.position.set(Math.cos(a)*radialDist, ringY, Math.sin(a)*radialDist);
+      pGrp.rotation.y = -a;
+      pGrp._baseY = ringY;
+      payloadGroup.add(pGrp);
 
-    // Thin radial connector line from ring to payload
-    payloadGroup.add(mkLine([
-      new THREE.Vector3(Math.cos(a)*(ringR+ringThick), 0, Math.sin(a)*(ringR+ringThick)),
-      new THREE.Vector3(Math.cos(a)*(ringR+bracketGap), 0, Math.sin(a)*(ringR+bracketGap)),
-    ], new THREE.LineBasicMaterial({color:0xddaa22, transparent:true, opacity:.5})));
+      // ── Conical mount adapter: large circle at port hole → small circle at box face ──
+      // Large end (ring side) = portR; small end = fits within box face
+      const mountLargeR = portR;
+      const mountSmallR = Math.min(pw * 0.38, ph * 0.38, portR * 0.55);
+      const mountGeo = new THREE.CylinderGeometry(mountSmallR, mountLargeR, bracketGap, 40, 1, false);
+      const mountMesh = new THREE.Mesh(mountGeo, new THREE.MeshStandardMaterial({
+        color:0x2a3848, metalness:0.78, roughness:0.25, side:THREE.DoubleSide, transparent:true, opacity:0.35, depthWrite:false
+      }));
+      // Cylinder axis is Y by default — rotate so it points radially (local +X after rotation.y = -a)
+      mountMesh.rotation.z   = -Math.PI / 2;
+      const mountPivot = new THREE.Group();
+      mountPivot.add(mountMesh);
+      mountPivot.position.set(Math.cos(a)*(ringR + bracketGap/2), ringY, Math.sin(a)*(ringR + bracketGap/2));
+      mountPivot.rotation.y = -a;
+      mountGroup.add(mountPivot);
+    }
   });
 
   // ── 4. USER PAYLOAD — bright cyan wireframe ────────────────
@@ -917,9 +952,14 @@ function buildFairingScene(vIdx) {
     ], new THREE.LineBasicMaterial({color:0x00d4ff, transparent:true, opacity:.4})));
   }
 
-  uGrp.position.copy(uDir).multiplyScalar(ringR + uD/2 + bracketGap);
+  uGrp._radialDist = ringR + uD/2 + bracketGap;
+  uGrp.position.copy(uDir).multiplyScalar(uGrp._radialDist);
   uGrp.rotation.y = -ua;
+  // Store base opacities for proportional fade
+  uGrp.traverse(ch => { if(ch.isMesh && ch.material) ch.material._baseOpacity = ch.material.opacity; });
+  S.swapAngle = 0;
   userPayloadMesh = uGrp;
+  uGrp._homePos = {x:uGrp.position.x, y:0, z:uGrp.position.z, rotY:uGrp.rotation.y};
 
   // Bright connector line for user slot
   payloadGroup.add(mkLine([
@@ -934,7 +974,7 @@ function buildFairingScene(vIdx) {
   // Tapers from the ESPA top flange radius down to a smaller payload interface
   const adaptBotR = flangeOuterR;          // matches top ESPA flange OD
   const adaptTopR = ER * 0.30;             // smaller payload interface ring
-  const adaptH    = ER * 0.65;             // adapter height
+  const adaptH    = ER * 0.25;             // adapter height
 
   // Solid frustum skin (semi-transparent, dark aluminium)
   const adaptMat = new THREE.MeshStandardMaterial({
@@ -964,7 +1004,8 @@ function buildFairingScene(vIdx) {
     new THREE.LineBasicMaterial({color:0x00d4ff, transparent:true, opacity:.55})));
 
   // ── Primary cuboid satellite ───────────────────────────────────────────────
-  const primW = ER * 0.82, primH = ER * 1.00, primD = ER * 0.82;
+  // TODO: change primary payload geometry (currently a plain box)
+  const primW = R * 0.85, primH = ER * 2.8, primD = R * 0.85;
   const primBotY = topRingTopY + adaptH + 0.04;
   const primGrp = new THREE.Group();
 
@@ -994,6 +1035,9 @@ function buildFairingScene(vIdx) {
   }
   primGrp.position.set(0, primBotY + primH / 2, 0);
   espaGroup.add(primGrp);
+  primaryPayloadGrp = primGrp;
+  // Store base opacities so the render loop can interpolate from them without compounding
+  primGrp.traverse(ch => { if(ch.isMesh && ch.material) ch.material._baseOpacity = ch.material.opacity; });
 
   // ── 5. MASS CG ─────────────────────────────────────────────
   const cgSphere = new THREE.Mesh(
@@ -1017,9 +1061,19 @@ function buildFairingScene(vIdx) {
   massGroup.visible = S.showMass;
 
   // ── 6. ASSEMBLE ────────────────────────────────────────────
-  scene.add(fairingGroup, espaGroup, payloadGroup, userPayloadMesh, massGroup);
+  scene.add(fairingGroup, espaGroup, payloadGroup, userPayloadMesh, massGroup, mountGroup);
   fairingGroup.visible = S.showFairing;
   espaGroup.visible    = S.showAdapters;
+  mountGroup.visible   = false; // revealed after solve completes
+
+  // Cache per-frame render targets to avoid allocations in renderLoop
+  userPayloadBodyMat = null;
+  userPayloadMesh.traverse(ch => { if(ch.isMesh && ch.material && ch.material.emissiveIntensity !== undefined) userPayloadBodyMat = ch.material; });
+  payloadGroupGroups = payloadGroup.children.filter(ch => ch.isGroup);
+  // Store home positions so the shuffle animation knows where to lerp back to
+  payloadGroupGroups.forEach(grp => {
+    grp._homePos = {x:grp.position.x, y:grp.position.y, z:grp.position.z, rotY:grp.rotation.y};
+  });
 
   camDist  = 22.0;  // Falcon 9 fairing is tall — needs distance to see full shape
   camPhi   = 1.08;
@@ -1040,19 +1094,23 @@ function buildCandidateMeshes(candidates){
   candidateMeshes=[];
   const v=VEHICLES[0];
   const ER=v.espaR, N=v.nPorts;
-  const uSc=Math.min(1.0, S.mass/280+.38);
-  candidates.forEach((c,i)=>{
-    const portFrac=(i%N)/N;
-    const radMult=0.75+(i/candidates.length)*0.55;
-    const yOff=((i%5)-2)*0.22;
-    const a=portFrac*Math.PI*2+(i*0.19);
-    const geo=new THREE.BoxGeometry(.55*uSc,.44*uSc,.38*uSc);
-    const mat=new THREE.MeshStandardMaterial({color:0x00d4ff,transparent:true,opacity:0,metalness:.1,roughness:.6,emissive:0x00d4ff,emissiveIntensity:.05});
+  const collarR=ER*0.68, bracketGap=0.22;
+  const baseW=0.54, baseH=0.46, baseD=0.40;
+  const uSc=Math.min(1.0, S.mass/280+0.38);
+  candidates.forEach((c)=>{
+    const a=(c.portIdx/N)*Math.PI*2;
+    const sc=c.sizeScale*uSc;
+    const w=baseW*sc, h=baseH*sc, d=baseD*sc;
+    const radialDist=collarR+d/2+bracketGap;
+    const geo=new THREE.BoxGeometry(w,h,d);
+    const mat=new THREE.MeshStandardMaterial({color:0x00d4ff,transparent:true,opacity:0,metalness:0.1,roughness:0.6,emissive:0x00d4ff,emissiveIntensity:0});
     const mesh=new THREE.Mesh(geo,mat);
-    mesh.position.set(Math.cos(a)*(ER*radMult), yOff, Math.sin(a)*(ER*radMult));
+    const bx=Math.cos(a)*radialDist, bz=Math.sin(a)*radialDist;
+    mesh.position.set(bx,0,bz);
     mesh.rotation.y=-a;
+    mesh._bx=bx; mesh._by=0; mesh._bz=bz;
     scene.add(mesh);
-    candidateMeshes.push({mesh, mat, c});
+    candidateMeshes.push({mesh,mat,c});
   });
 }
 
@@ -1070,6 +1128,62 @@ window.addEventListener('resize', resizeRenderer);
 resizeRenderer();
 
 // ══════════════════════════════════════════════════════════════
+// SATELLITE SWAP ANIMATION
+// Moves the user payload (cyan sat) port-to-port each phase to
+// illustrate the optimisation search. Primary payload stays put.
+// ══════════════════════════════════════════════════════════════
+function updateUserPayloadSwap(dt){
+  if(!userPayloadMesh) return;
+  const p = S.pbProgress;
+  const v = VEHICLES[0];
+  const N = v.nPorts;
+
+  const [slo,shi] = PHASE_BOUNDS.seeding;
+  const [plo,phi] = PHASE_BOUNDS.placement;
+  const [wlo,whi] = PHASE_BOUNDS.sweep;
+  const [clo,chi] = PHASE_BOUNDS.convergence;
+
+  let targetPortIdx = 0;
+  let lerpSpeed = 6.0;
+
+  if(p <= slo){
+    // Pre-seeding: hold at port 0
+    targetPortIdx = 0;
+    lerpSpeed = 999;
+  } else if(p < phi){
+    // Placement: satellite follows whichever port is currently being tested.
+    // Candidates are laid out as [port0×3, port1×3, …] so divide by 3.
+    const pf = p < plo ? 0 : (p - plo) / (phi - plo);
+    const totalCands = N * 3;
+    const cIdx = Math.min(Math.floor(pf * totalCands), totalCands - 1);
+    targetPortIdx = Math.floor(cIdx / 3);
+    lerpSpeed = 9.0;
+  } else if(p < whi){
+    // Sweep: rapid cycling through all ports (~2 full laps) to check global constraints
+    const wf = (p - wlo) / (whi - wlo);
+    targetPortIdx = Math.floor((wf * 2.0 * N) % N);
+    lerpSpeed = 14.0;
+  } else {
+    // Convergence + Lock: settle at port 0 (optimal found by solver)
+    targetPortIdx = 0;
+    lerpSpeed = p > chi ? 8.0 : 2.8; // slower drift during convergence, snap on lock
+  }
+
+  const targetAngle = (targetPortIdx / N) * Math.PI * 2;
+
+  // Shortest-path angle lerp
+  let diff = targetAngle - S.swapAngle;
+  while(diff >  Math.PI) diff -= Math.PI * 2;
+  while(diff < -Math.PI) diff += Math.PI * 2;
+  S.swapAngle += diff * Math.min(1.0, lerpSpeed * dt);
+
+  const a = S.swapAngle;
+  const rDist = userPayloadMesh._radialDist || 2.0;
+  userPayloadMesh.position.set(Math.cos(a) * rDist, 0, Math.sin(a) * rDist);
+  userPayloadMesh.rotation.y = -a;
+}
+
+// ══════════════════════════════════════════════════════════════
 // AUTO-ROTATE & RENDER LOOP
 // ══════════════════════════════════════════════════════════════
 let autoRotate = true;
@@ -1084,13 +1198,6 @@ function renderLoop(){
     updateCamera();
   }
 
-  // User payload pulse
-  if(userPayloadMesh){
-    const s = 1 + .025*Math.sin(Date.now()*.002);
-    userPayloadMesh.scale.set(s,s,s);
-    // Emissive pulse
-    userPayloadMesh.traverse(ch=>{if(ch.isMesh&&ch.material&&ch.material.emissiveIntensity!==undefined) ch.material.emissiveIntensity=0.12+0.08*Math.sin(Date.now()*.002);});
-  }
 
   // Playback updates
   if(S.pbPlaying){
@@ -1103,9 +1210,104 @@ function renderLoop(){
     updateCandidateOpacities();
   }
 
+  // Animate manifest payloads + primary payload during solve
+  if(S.pbPhase!=='idle'){
+    const p=S.pbProgress;
+    const [clo,chi]=PHASE_BOUNDS.convergence;
+    const cf=p>clo?Math.min((p-clo)/(chi-clo),1):0;
+
+    // Manifest payload boxes: shuffle between ESPA slots during solve
+    if(payloadGroup && !S.solved && S.shuffleSchedule){
+      // Find active permutation for current progress
+      let perm = S.shuffleSchedule[0][1];
+      for(const [evtP, evtPerm] of S.shuffleSchedule){
+        if(p >= evtP) perm = evtPerm; else break;
+      }
+      // Lerp speed: snappy during sweep, graceful during convergence
+      const lspd = p > 0.72 ? 1.6 : p > 0.35 ? 9.0 : 4.5;
+      // Combine manifest boxes + user payload into one shuffle pool
+      const allBoxes = userPayloadMesh ? [...payloadGroupGroups, userPayloadMesh] : payloadGroupGroups;
+      allBoxes.forEach((grp, i) => {
+        const tGrp = allBoxes[perm[i]];
+        if(!tGrp?._homePos) return;
+        const hp = tGrp._homePos;
+        grp.position.x += (hp.x - grp.position.x) * Math.min(1, lspd * dt);
+        grp.position.y += (hp.y - grp.position.y) * Math.min(1, lspd * dt);
+        grp.position.z += (hp.z - grp.position.z) * Math.min(1, lspd * dt);
+        // Shortest-path rotation lerp
+        let rd = hp.rotY - grp.rotation.y;
+        while(rd >  Math.PI) rd -= Math.PI * 2;
+        while(rd < -Math.PI) rd += Math.PI * 2;
+        grp.rotation.y += rd * Math.min(1, lspd * dt);
+        // Fade in manifest boxes after seeding (user payload opacity handled separately)
+        if(grp !== userPayloadMesh){
+          const bodyMesh = grp.children[0];
+          if(bodyMesh?.isMesh && bodyMesh.material)
+            bodyMesh.material.opacity = p < PHASE_BOUNDS.placement[0] ? 0.07 : 0.35;
+        }
+      });
+    } else if(payloadGroup && S.solved){
+      payloadGroupGroups.forEach(grp => {
+        if(!grp._homePos) return;
+        grp.position.set(grp._homePos.x, grp._homePos.y, grp._homePos.z);
+        grp.rotation.y = grp._homePos.rotY;
+      });
+    }
+
+    // Primary payload: always fully visible on the cake-top — never hidden or shrunk
+    if(primaryPayloadGrp){
+      primaryPayloadGrp.scale.setScalar(1);
+      if(!S.solved){
+        primaryPayloadGrp.traverse(ch=>{
+          if(ch.isMesh && ch.material && ch.material._baseOpacity !== undefined)
+            ch.material.opacity = ch.material._baseOpacity;
+        });
+      }
+    }
+  }
+
   renderer.render(scene, camera);
 }
 renderLoop();
+
+// ══════════════════════════════════════════════════════════════
+// SHUFFLE ANIMATION HELPERS
+// ══════════════════════════════════════════════════════════════
+function deterministicShuffle(arr, seed){
+  const a = arr.slice();
+  let s = seed >>> 0;
+  for(let i = a.length - 1; i > 0; i--){
+    s = Math.imul(s, 1664525) + 1013904223 >>> 0;
+    const j = s % (i + 1);
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function buildShuffleSchedule(){
+  // +1 to include the user payload (cyan box) in the shuffle pool
+  const n = payloadGroupGroups.length + (userPayloadMesh ? 1 : 0);
+  if(!n) return;
+  const id = Array.from({length:n}, (_,i) => i);
+  // Schedule: [progress threshold, permutation array]
+  // Placement (0.08–0.35): medium-paced swaps showing the solver testing slots
+  // Sweep (0.35–0.72): rapid shuffles — global constraint search across rings
+  // Convergence (0.72–0.90): slow settle toward optimal (identity = home)
+  S.shuffleSchedule = [
+    [0.00, id],
+    [0.10, deterministicShuffle(id, 42)],
+    [0.18, deterministicShuffle(id, 137)],
+    [0.26, deterministicShuffle(id, 251)],
+    [0.35, deterministicShuffle(id, 999)],
+    [0.42, deterministicShuffle(id, 1234)],
+    [0.49, deterministicShuffle(id, 5678)],
+    [0.56, deterministicShuffle(id, 9012)],
+    [0.63, deterministicShuffle(id, 3456)],
+    [0.70, deterministicShuffle(id, 7890)],
+    [0.78, deterministicShuffle(id, 2345)],
+    [0.90, id], // converge back to optimal home positions
+  ];
+}
 
 // ══════════════════════════════════════════════════════════════
 // SOLVER SIMULATION & PLAYBACK
@@ -1120,34 +1322,40 @@ const PHASE_BOUNDS = {
 };
 
 function buildSolverTrace(){
-  const N=47;
+  // Candidates are port-ordered attempts: 2 invalid + 1 valid per port.
+  // This drives a deliberate constraint-search animation rather than random scatter.
+  const v=VEHICLES[0], N=v.nPorts;
   const cands=[];
-  for(let i=0;i<N;i++){
-    // Fibonacci sphere-ish distribution inside fairing
-    const phi2=Math.acos(1-2*(i+.5)/N);
-    const theta2=Math.PI*(1+Math.sqrt(5))*i;
+  for(let pi=0;pi<N;pi++){
+    // Attempt 0: oversized payload → FAIRING_VIOLATION
     cands.push({
-      id:i,
-      px:Math.sin(phi2)*Math.cos(theta2)*.7,
-      py:(Math.random()-.5)*.8,
-      pz:Math.sin(phi2)*Math.sin(theta2)*.7,
-      elim:null, elimT:0, score:0,
-      status:'hidden', opacity:0, targetOpacity:0,
+      id:pi*3, portIdx:pi, attempt:0, sizeScale:1.85,
+      elim:'FAIRING_VIOLATION', elimT:(pi*3)/(N*3-1),
+      score:0, status:'hidden', opacity:0, targetOpacity:0, flashTime:-1e9,
+    });
+    // Attempt 1: conflicting size → COLLISION
+    cands.push({
+      id:pi*3+1, portIdx:pi, attempt:1, sizeScale:1.28,
+      elim:'COLLISION', elimT:(pi*3+1)/(N*3-1),
+      score:0, status:'hidden', opacity:0, targetOpacity:0, flashTime:-1e9,
+    });
+    // Attempt 2: valid placement
+    cands.push({
+      id:pi*3+2, portIdx:pi, attempt:2, sizeScale:0.78+pi*0.025,
+      elim:null, elimT:0,
+      score:pi===0?94.2:72+(N-1-pi)*3.5,
+      status:'hidden', opacity:0, targetOpacity:0, flashTime:-1e9,
     });
   }
-  const elimTypes=['GEOMETRIC_COLLISION','INTERFACE_MISMATCH','ORBIT_INCOMPATIBLE','SCHEDULE_CONFLICT'];
-  const counts=[12,8,7,4];
-  let ei=0;
-  counts.forEach((cnt,ti)=>{for(let k=0;k<cnt;k++){if(ei<N){cands[ei].elim=elimTypes[ti];cands[ei].elimT=ei/31;ei++;}}});
-  const survivors=[];
-  for(let i=ei;i<N;i++) survivors.push(i);
-  const optId=survivors[Math.floor(survivors.length/2)];
-  survivors.forEach(id=>{cands[id].score=70+Math.random()*20+(id===optId?4:0);if(id===optId)cands[id].score=94.2;});
+  const survivors=cands.reduce((acc,c,i)=>{ if(!c.elim) acc.push(i); return acc; },[]);
+  const optId=survivors[0]; // port 0's valid attempt is always index 2
   return {cands,survivors,optId};
 }
 
 function updateCandidateOpacities(){
   const p=S.pbProgress;
+  const now=performance.now();
+  const TOTAL=S.pbCandidates.length; // N*3
   const [slo,shi]=PHASE_BOUNDS.seeding;
   const [plo,phi]=PHASE_BOUNDS.placement;
   const [wlo,whi]=PHASE_BOUNDS.sweep;
@@ -1156,78 +1364,124 @@ function updateCandidateOpacities(){
   S.pbCandidates.forEach((c,i)=>{
     const cm=candidateMeshes[i];
     if(!cm) return;
-    let tgt=0;
 
-    if(p<slo){tgt=0;}
-    else if(p<shi){
+    let tgtOpacity=0, tgtColor=0x00d4ff, tgtEmissive=0x000000, tgtEmissiveInt=0, doJitter=false;
+
+    if(p<=slo){
+      tgtOpacity=0;
+    } else if(p<shi){
+      // Seeding: all candidates appear as dim ghosts at their port positions
       const sf=(p-slo)/(shi-slo);
-      const stag=i/S.pbCandidates.length*.6;
-      tgt=sf>stag?.18:0;
+      const stag=(i/TOTAL)*0.7;
+      tgtOpacity=sf>stag?0.10:0;
       c.status=sf>stag?'ghost':'hidden';
+
     } else if(p<phi){
+      // Placement: test candidates port-by-port in strict order
       const pf=(p-plo)/(phi-plo);
-      const act=Math.floor(pf*S.pbCandidates.length);
-      if(i===act){c.status='testing';tgt=0.6;}
-      else{if(c.status==='testing')c.status='ghost';tgt=c.status==='ghost'?.18:0;}
+      const myStart=i/TOTAL, myEnd=(i+1)/TOTAL;
+
+      if(pf<myStart){
+        // Not yet reached — dim waiting ghost
+        tgtOpacity=0.06; tgtColor=0x334455;
+      } else if(pf<myEnd){
+        const slot=(pf-myStart)/(myEnd-myStart); // 0→1 within this candidate's test window
+        if(c.elim){
+          if(slot<0.40){
+            // Appear and evaluate — neutral cyan
+            tgtOpacity=0.60; tgtColor=0x00d4ff; tgtEmissive=0x00d4ff; tgtEmissiveInt=0.12;
+            c.status='testing';
+          } else if(slot<0.72){
+            // Constraint fails: red pulse + jitter
+            const pulse=Math.sin((slot-0.40)/0.32*Math.PI*5);
+            tgtOpacity=0.75; tgtColor=0xef4444; tgtEmissive=0xef4444;
+            tgtEmissiveInt=0.35+0.35*pulse;
+            doJitter=true; c.status='rejecting';
+            if(c.flashTime<0) c.flashTime=now;
+          } else {
+            // Fade out after rejection
+            tgtOpacity=0.75*(1-(slot-0.72)/0.28);
+            tgtColor=0xef4444; tgtEmissive=0x000000; tgtEmissiveInt=0;
+            c.status='eliminated';
+          }
+        } else {
+          // Valid: appear and hold — stable cyan
+          tgtOpacity=slot<0.5?slot*0.9:0.45;
+          tgtColor=0x00d4ff; tgtEmissive=0x00d4ff; tgtEmissiveInt=0.08;
+          c.status='survivor';
+        }
+      } else {
+        // Already processed
+        if(c.elim){ tgtOpacity=0; c.status='eliminated'; }
+        else { tgtOpacity=0.38; tgtColor=0x00d4ff; tgtEmissive=0x00d4ff; tgtEmissiveInt=0.06; c.status='survivor'; }
+      }
+
     } else if(p<whi){
-      if(c.status==='testing')c.status='ghost';
-      if(c.elim!==null){
-        const sf=(p-wlo)/(whi-wlo);
-        if(sf>c.elimT){
-          c.status='eliminated';
-          const df=Math.min((sf-c.elimT)/.04,1);
-          tgt=.18*(1-df);
-        } else tgt=.18;
-      } else tgt=.18;
+      // Sweep: global cross-port constraint check — invalid already gone, survivors stable
+      if(c.elim){ tgtOpacity=0; c.status='eliminated'; }
+      else {
+        const wf=(p-wlo)/(whi-wlo);
+        // Gentle pulse to show active evaluation
+        tgtOpacity=0.38+0.06*Math.sin(wf*Math.PI*4+i);
+        tgtColor=0x00d4ff; tgtEmissive=0x00d4ff; tgtEmissiveInt=0.06;
+        c.status='survivor';
+      }
+
     } else if(p<chi){
-      if(c.status==='eliminated'){tgt=0;}
-      else if(!c.elim){
-        const isSurv=S.pbSurvivors.includes(i);
-        if(isSurv){
-          const cf=(p-clo)/(chi-clo);
-          if(i===S.pbOptIdx){tgt=.45+.55*cf;c.status='optimal';}
-          else{tgt=.45-.33*cf;c.status='survivor';}
+      // Convergence: rank survivors, highlight optimal
+      if(c.elim){ tgtOpacity=0; }
+      else {
+        const cf=(p-clo)/(chi-clo);
+        if(i===S.pbOptIdx){
+          tgtOpacity=0.5+0.45*cf; tgtColor=0x00d4ff;
+          tgtEmissive=0x00d4ff; tgtEmissiveInt=0.12+0.40*cf;
+          c.status='optimal';
+        } else {
+          tgtOpacity=0.38*(1-cf*0.65); tgtColor=0x00e5a0;
+          tgtEmissive=0x000000; tgtEmissiveInt=0;
+          c.status='survivor';
         }
       }
+
     } else {
-      if(c.status==='eliminated'||c.status==='hidden')tgt=0;
-      else if(c.status==='survivor')tgt=0.05;
-      else if(i===S.pbOptIdx||c.status==='optimal')tgt=0;  // user payload takes over
+      // Lock: optimal fades out (user payload takes over), survivors dim
+      if(c.elim||c.status==='hidden'){ tgtOpacity=0; }
+      else if(i===S.pbOptIdx||c.status==='optimal'){ tgtOpacity=0; }
+      else { tgtOpacity=0.04; }
     }
 
-    c.targetOpacity=tgt;
-    c.opacity += (tgt-c.opacity)*.12;
+    // Smooth opacity transition
+    c.opacity+=(tgtOpacity-c.opacity)*0.14;
     cm.mat.opacity=Math.max(0,c.opacity);
 
-    // Color per elimination type
-    if(c.status==='eliminated'){
-      if(c.elim==='SCHEDULE_CONFLICT') cm.mat.color.set(0xf59e0b);
-      else cm.mat.color.set(0xef4444);
-      if(cm.mat.emissive) cm.mat.emissive.set(0x000000);
-    } else if(c.status==='optimal'){
-      cm.mat.color.set(0x00d4ff);
-      if(cm.mat.emissive) cm.mat.emissive.set(0x00d4ff);
-      if(cm.mat.emissiveIntensity!==undefined) cm.mat.emissiveIntensity=.3;
-    } else if(c.status==='survivor'){
-      cm.mat.color.set(0x00e5a0);
-      if(cm.mat.emissive) cm.mat.emissive.set(0x000000);
-    } else if(c.status==='testing'){
-      cm.mat.color.set(0x00d4ff);
-      if(cm.mat.emissive) cm.mat.emissive.set(0x00d4ff);
-      if(cm.mat.emissiveIntensity!==undefined) cm.mat.emissiveIntensity=.2;
+    // Apply color
+    cm.mat.color.set(tgtColor);
+    if(cm.mat.emissive) cm.mat.emissive.set(tgtEmissive);
+    if(cm.mat.emissiveIntensity!==undefined) cm.mat.emissiveIntensity=tgtEmissiveInt;
+
+    // Jitter on rejection: small rapid displacement
+    if(doJitter && c.status==='rejecting'){
+      const jt=(now-c.flashTime)*0.001;
+      const jA=0.045;
+      cm.mesh.position.set(
+        cm.mesh._bx+Math.sin(jt*32+i*1.3)*jA,
+        cm.mesh._by+Math.cos(jt*29+i*2.1)*jA*0.5,
+        cm.mesh._bz+Math.sin(jt*27+i*0.9)*jA
+      );
     } else {
-      cm.mat.color.set(0x00d4ff);
-      if(cm.mat.emissive) cm.mat.emissive.set(0x000000);
-      if(cm.mat.emissiveIntensity!==undefined) cm.mat.emissiveIntensity=0;
+      cm.mesh.position.set(cm.mesh._bx, cm.mesh._by, cm.mesh._bz);
     }
   });
 
-  // Show/hide user payload during playback
+  // User payload opacity — satellite is visible from seeding onward, brightens on lock
   if(userPayloadMesh){
-    const p2=S.pbProgress;
-    const cf2=p2>PHASE_BOUNDS.convergence[0]?Math.min((p2-PHASE_BOUNDS.convergence[0])/(PHASE_BOUNDS.convergence[1]-PHASE_BOUNDS.convergence[0]),1):0;
-    const uOpacity=p2>PHASE_BOUNDS.seeding[0]?.08+cf2*.82:0;
-    userPayloadMesh.traverse(ch=>{if(ch.isMesh&&ch.material) ch.material.opacity=uOpacity;});
+    const cf2 = p>clo ? Math.min((p-clo)/(chi-clo),1) : 0;
+    let uOpacity;
+    if(p <= slo)      uOpacity = 0;
+    else if(p < shi)  uOpacity = (p-slo)/(shi-slo) * 0.4;  // fade in during seeding
+    else if(p < chi)  uOpacity = 0.4;                       // solid while testing/sweeping
+    else              uOpacity = 0.4 + cf2 * 0.5;           // ramp to 0.9 at lock
+    userPayloadMesh.traverse(ch=>{ if(ch.isMesh&&ch.material) ch.material.opacity=uOpacity; });
   }
 }
 
@@ -1266,18 +1520,23 @@ function updateAnnotationCounts(){
   const sf=p<wlo?0:p>whi?1:(p-wlo)/(whi-wlo);
   const [plo,phi]=PHASE_BOUNDS.placement;
   const pf=p<plo?0:p>phi?1:(p-plo)/(phi-plo);
-  const ev=Math.round(47*Math.max(pf,sf));
-  const el=Math.round(31*sf);
+  const TOTAL=S.pbCandidates.length;
+  const N_ELIM=S.pbCandidates.filter(c=>c.elim!==null).length;
+  const N_VALID=TOTAL-N_ELIM;
+  const ev=Math.round(TOTAL*Math.max(pf,sf));
+  const el=Math.round(N_ELIM*sf);
   const feas=Math.max(0,ev-el);
   const [clo,chi]=PHASE_BOUNDS.convergence;
   const cf=p<clo?0:p>chi?1:(p-clo)/(chi-clo);
   const best=p<wlo?0:p<clo?70+sf*12:70+12+cf*12.2;
-  const rt=(p*1.2).toFixed(1)+'s';
-  const phLbls={seeding:'Phase 1: Seeding Candidates',placement:'Phase 2: Testing Configurations',sweep:'Phase 3: Constraint Sweep',convergence:'Phase 4: Convergence',lock:'Phase 5: Solution Lock',done:'Solver Working Memory'};
+  const rt=(p*PB_DURATION/1000).toFixed(1)+'s';
+  const phLbls={seeding:'Phase 1: Seeding Candidates',placement:'Phase 2: Testing Configurations',sweep:'Phase 3: Constraint Sweep',convergence:'Phase 4: Convergence',lock:'Phase 5: Solution Lock'};
   setText('ann-phase-lbl',phLbls[S.pbPhase]||'Solver Working Memory');
-  setText('ac-eval',ev+' / 847');setText('ac-elim',el);
-  setText('ac-geo',Math.min(12,Math.round(12*sf*1.2)));setText('ac-iface',Math.min(8,Math.round(8*sf*1.1)));
-  setText('ac-orb',Math.min(7,Math.round(7*sf*.9)));setText('ac-sched',Math.min(4,Math.round(4*sf*.8)));
+  setText('ac-eval',ev+' / '+TOTAL);setText('ac-elim',el);
+  setText('ac-geo',Math.min(Math.round(N_ELIM*.58),Math.round(N_ELIM*.58*sf*1.2)));
+  setText('ac-iface',Math.min(Math.round(N_ELIM*.25),Math.round(N_ELIM*.25*sf*1.1)));
+  setText('ac-orb',Math.min(Math.round(N_ELIM*.12),Math.round(N_ELIM*.12*sf*.9)));
+  setText('ac-sched',Math.min(Math.round(N_ELIM*.05),Math.round(N_ELIM*.05*sf*.8)));
   setText('ac-feas',feas);setText('ac-best',p<wlo?'—':best.toFixed(1));
   setText('ac-time',p<.05?'—':rt);
 }
@@ -1290,6 +1549,18 @@ async function runSolve(){
   btn.disabled=true;
   S.solved=false; S.pbPhase='idle'; S.pbPlaying=false;
   cancelAnimationFrame(S.pbAnimId);
+
+  document.getElementById('result-body').innerHTML=`
+    <div class="rp-loading">
+      <div class="rp-loading-hdr">Evaluating manifest candidates&hellip;</div>
+      ${[0,1,2].map(()=>`
+      <div class="skel-card">
+        <div class="skel-bar w30"></div>
+        <div class="skel-bar w70"></div>
+        <div class="skel-bar w50"></div>
+        <div class="skel-bar w90"></div>
+      </div>`).join('')}
+    </div>`;
 
   const ol=document.getElementById('solve-ol');
   ol.classList.add('show');
@@ -1321,7 +1592,8 @@ async function runSolve(){
   S.pbCandidates=trace.cands;
   S.pbSurvivors=trace.survivors;
   S.pbOptIdx=trace.optId;
-  buildCandidateMeshes(trace.cands);
+  // Candidate meshes disabled — no blue ghost boxes during playback
+  buildShuffleSchedule();
 
   // Show overlays
   document.getElementById('scrubber').classList.add('show');
@@ -1331,7 +1603,17 @@ async function runSolve(){
   S.pbPhase='seeding'; S.pbProgress=0; S.pbPlaying=true;
   S.pbSpeed=.5; S.pbStartTime=performance.now();
   document.getElementById('scr-play').textContent='❙❙';
-  renderResults();
+  document.getElementById('result-body').innerHTML=`
+    <div class="rp-loading">
+      <div class="rp-loading-hdr">Evaluating manifest candidates&hellip;</div>
+      ${[0,1,2].map(()=>`
+      <div class="skel-card">
+        <div class="skel-bar w30"></div>
+        <div class="skel-bar w70"></div>
+        <div class="skel-bar w50"></div>
+        <div class="skel-bar w90"></div>
+      </div>`).join('')}
+    </div>`;
   document.getElementById('trace-status').textContent='PLAYBACK RUNNING · Solver trace rendering · 847 candidates';
   document.getElementById('trace-status').style.color='#00d4ff';
   btn.disabled=false;
@@ -1347,12 +1629,18 @@ function finishPlayback(){
   if(userPayloadMesh) userPayloadMesh.traverse(ch=>{if(ch.isMesh&&ch.material) ch.material.opacity=.9;});
   candidateMeshes.forEach(cm=>{ cm.mat.opacity=0; });
   autoRotate=true;
+  renderResults();
   selectOpt(0);
   updateTraceLog();
   document.getElementById('trace-status').textContent='CONVERGED · 847 candidates evaluated · 1.2s · Top 3 returned';
   document.getElementById('trace-status').style.color='var(--pass)';
   document.getElementById('engine-status').textContent='SOLVE COMPLETE';
   updatePhasePills();
+  // Snap manifest payloads and primary payload to final resting state
+  if(payloadGroup) payloadGroupGroups.forEach(grp=>{ if(grp._homePos){ grp.position.set(grp._homePos.x,grp._homePos.y,grp._homePos.z); grp.rotation.y=grp._homePos.rotY; }});
+  if(userPayloadMesh?._homePos){ const h=userPayloadMesh._homePos; userPayloadMesh.position.set(h.x,h.y,h.z); userPayloadMesh.rotation.y=h.rotY; }
+  if(primaryPayloadGrp) primaryPayloadGrp.scale.setScalar(1);
+  if(mountGroup) mountGroup.visible = true;
 }
 
 function delay(ms){return new Promise(r=>setTimeout(r,ms));}
@@ -1364,12 +1652,15 @@ function pbTogglePlay(){
   if(S.pbPhase==='idle') return;
   if(S.pbProgress>=1){pbReplay();return;}
   S.pbPlaying=!S.pbPlaying;
-  document.getElementById('scr-play').textContent=S.pbPlaying?'❙❙':'▶';
+  const btn=document.getElementById('scr-play');
+  btn.textContent=S.pbPlaying?'❙❙':'▶';
+  btn.setAttribute('aria-label',S.pbPlaying?'Pause':'Play');
   if(S.pbPlaying){autoRotate=false;S.pbStartTime=performance.now()-S.pbProgress*PB_DURATION/S.pbSpeed;}
 }
 function pbStep(dir){
   if(S.pbPhase==='idle') return;
-  S.pbPlaying=false;document.getElementById('scr-play').textContent='▶';
+  S.pbPlaying=false;
+  const btn=document.getElementById('scr-play');btn.textContent='▶';btn.setAttribute('aria-label','Play');
   S.pbProgress=Math.max(0,Math.min(1,S.pbProgress+dir*.018));
   updatePhaseFromProgress();updateScrubberUI();updateAnnotationCounts();updateCandidateOpacities();renderer.render(scene,camera);
 }
@@ -1377,7 +1668,8 @@ function pbScrubClick(e){
   if(S.pbPhase==='idle') return;
   const rect=e.currentTarget.getBoundingClientRect();
   S.pbProgress=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));
-  S.pbPlaying=false;document.getElementById('scr-play').textContent='▶';
+  S.pbPlaying=false;
+  const btn=document.getElementById('scr-play');btn.textContent='▶';btn.setAttribute('aria-label','Play');
   S.pbCandidates.forEach(c=>{c.status='hidden';c.opacity=0;c.targetOpacity=0;});
   updatePhaseFromProgress();updateScrubberUI();updateAnnotationCounts();updateCandidateOpacities();
 }
@@ -1392,13 +1684,18 @@ function pbReplay(){
   S.pbCandidates.forEach(c=>{c.status='hidden';c.opacity=0;c.targetOpacity=0;});
   candidateMeshes.forEach(cm=>cm.mat.opacity=0);
   if(userPayloadMesh)userPayloadMesh.traverse(ch=>{if(ch.isMesh&&ch.material) ch.material.opacity=0;});
-  document.getElementById('scr-play').textContent='❙❙';
+  if(primaryPayloadGrp) primaryPayloadGrp.scale.setScalar(1); // always present on cake-top
+  if(payloadGroup) payloadGroupGroups.forEach(grp=>{ if(grp._homePos) grp.position.set(grp._homePos.x,grp._homePos.y,grp._homePos.z); });
+  if(userPayloadMesh?._homePos){ const h=userPayloadMesh._homePos; userPayloadMesh.position.set(h.x,h.y,h.z); userPayloadMesh.rotation.y=h.rotY; }
+  if(mountGroup) mountGroup.visible = false;
+  S.swapAngle = 0;
+  buildShuffleSchedule();
+  const replayBtn=document.getElementById('scr-play');replayBtn.textContent='❙❙';replayBtn.setAttribute('aria-label','Pause');
   document.getElementById('ann-live').classList.add('show');
   document.getElementById('ann-util').style.display='none';
   document.getElementById('config-rail').style.display='none';
   const trace=buildSolverTrace();
   S.pbCandidates=trace.cands;S.pbSurvivors=trace.survivors;S.pbOptIdx=trace.optId;
-  buildCandidateMeshes(trace.cands);
   autoRotate=false;S.pbStartTime=performance.now();
 }
 function pbSkipEnd(){
@@ -1410,19 +1707,90 @@ function pbSkipEnd(){
 // ══════════════════════════════════════════════════════════════
 // UI CONTROLS
 // ══════════════════════════════════════════════════════════════
+// ── Input sanitation ────────────────────────────────────────
+const FIELD_META = {
+  mass: { min:1,   max:400,  hint:'1 – 400 kg',     integer:true  },
+  alt:  { min:300, max:1200, hint:'300 – 1,200 km',  integer:true  },
+  inc:  { min:0,   max:180,  hint:'0 – 180°',        integer:false },
+};
+
+// Block keystrokes that produce invalid input for our numeric fields:
+//   e / E  — scientific notation (1e3) makes no sense in this UI
+//   + / -  — all fields have min ≥ 0, no signed input needed
+//   .      — mass and altitude are whole-number fields
+function vmKey(e, k){
+  const blocked = ['e','E','+','-'];
+  if(FIELD_META[k].integer) blocked.push('.');
+  if(blocked.includes(e.key)) e.preventDefault();
+}
+
+function _clearFieldErr(k, el){
+  el.classList.remove('err','warn');
+  const errEl = document.getElementById('err-'+k);
+  if(errEl){ errEl.className='field-err'; errEl.textContent=''; }
+}
+
 function vm(k,v){
   S[k]=+v;
   const numMap={mass:'num-mass',alt:'num-alt',inc:'num-inc'};
-  if(numMap[k]){const n=document.getElementById(numMap[k]);if(n&&n!==document.activeElement)n.value=k==='inc'?(+v).toFixed(1):+v;}
+  if(numMap[k]){
+    const n=document.getElementById(numMap[k]);
+    if(n&&n!==document.activeElement) n.value=k==='inc'?(+v).toFixed(1):+v;
+    _clearFieldErr(k, n||document.createElement('span'));
+  }
 }
-function vmn(k,el){
-  let v=+el.value;
-  const min=+el.min,max=+el.max;
-  if(isNaN(v))return;
-  v=Math.min(max,Math.max(min,v));
-  S[k]=v;
-  const rng=document.getElementById('rng-'+k);
-  if(rng)rng.value=v;
+
+function vmn(k, el){
+  const {min, max, hint} = FIELD_META[k];
+  const raw = el.value;
+  _clearFieldErr(k, el);
+
+  // Empty: allow field to be cleared mid-edit without clobbering state
+  if(raw === '') return;
+
+  const v = +raw;
+
+  // Non-numeric (belt-and-suspenders; vmKey blocks most paths here)
+  if(isNaN(v)){
+    el.classList.add('err');
+    const errEl = document.getElementById('err-'+k);
+    if(errEl){ errEl.textContent='Numbers only'; errEl.classList.add('show'); }
+    return;
+  }
+
+  // Out of range: warn and clamp state so slider stays valid
+  if(v < min || v > max){
+    el.classList.add('warn');
+    const errEl = document.getElementById('err-'+k);
+    if(errEl){ errEl.textContent='Valid range: '+hint; errEl.classList.add('warn','show'); }
+    S[k] = Math.min(max, Math.max(min, v));
+    const rng = document.getElementById('rng-'+k);
+    if(rng) rng.value = S[k];
+    return;
+  }
+
+  // Valid
+  S[k] = v;
+  const rng = document.getElementById('rng-'+k);
+  if(rng) rng.value = v;
+}
+
+// On blur: enforce clamp and restore empty/invalid fields to last valid value
+function vmnBlur(k, el){
+  const {min, max, integer} = FIELD_META[k];
+  const raw = el.value;
+  _clearFieldErr(k, el);
+
+  if(raw === '' || isNaN(+raw)){
+    el.value = integer ? S[k] : S[k].toFixed(1);
+    return;
+  }
+
+  const clamped = Math.min(max, Math.max(min, +raw));
+  S[k] = clamped;
+  el.value = integer ? clamped : clamped.toFixed(1);
+  const rng = document.getElementById('rng-'+k);
+  if(rng) rng.value = clamped;
 }
 function sc(el,g){el.closest('.chip-g').querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));el.classList.add('on');}
 function setView(v){
@@ -1439,19 +1807,25 @@ function setView(v){
 function toggleFairingShell(){
   S.showFairing=!S.showFairing;
   if(fairingGroup)fairingGroup.visible=S.showFairing;
-  document.getElementById('vb-tr').classList.toggle('on',S.showFairing);
+  const btn=document.getElementById('vb-tr');
+  btn.classList.toggle('on',S.showFairing);
+  btn.setAttribute('aria-pressed',String(S.showFairing));
 }
 function toggleAdapters(){
   S.showAdapters=!S.showAdapters;
   if(espaGroup)espaGroup.visible=S.showAdapters;
-  document.getElementById('vb-ad').classList.toggle('on',S.showAdapters);
+  const btn=document.getElementById('vb-ad');
+  btn.classList.toggle('on',S.showAdapters);
+  btn.setAttribute('aria-pressed',String(S.showAdapters));
 }
 function toggleMass(){
   S.showMass=!S.showMass;
   if(massGroup)massGroup.visible=S.showMass;
-  document.getElementById('vb-ma').classList.toggle('on',S.showMass);
+  const btn=document.getElementById('vb-ma');
+  btn.classList.toggle('on',S.showMass);
+  btn.setAttribute('aria-pressed',String(S.showMass));
 }
-function selConfig(el){document.querySelectorAll('.config-thumb').forEach(c=>c.classList.remove('active'));el.classList.add('active');}
+function selConfig(el, i){document.querySelectorAll('.config-thumb').forEach(c=>c.classList.remove('active'));el.classList.add('active');if(S.solved)selectOpt(i);}
 function toggleTrace(){document.getElementById('trace-drawer').classList.toggle('open');}
 function openTrace(){document.getElementById('trace-drawer').classList.add('open');}
 function setText(id,v){const el=document.getElementById(id);if(el)el.textContent=v;}
@@ -1466,7 +1840,7 @@ function renderResults(){
       <div class="opt-card-hdr">
         <div class="opt-rank-row"><span class="opt-rank">OPTION ${i+1}</span><span class="opt-badge ${badges[i]}">${bLabel[i]}</span></div>
         <div class="opt-vehicle">${v.name}</div>
-        <div class="opt-manifest">${v.provider} · ${v.manifest}</div>
+        <div class="opt-manifest">${v.provider}${v.manifest ? ' · ' + v.manifest : ''}</div>
       </div>
       <div class="opt-body">
         <div class="opt-grid">
@@ -1474,11 +1848,11 @@ function renderResults(){
           <div><div class="kv-k">Orbit</div><div class="kv-v" style="font-size:9px">${v.orbit}</div></div>
           <div><div class="kv-k">Est. Price</div><div class="kv-v acc">${v.price}</div></div>
           <div><div class="kv-k">Deployer</div><div class="kv-v" style="font-size:9px">${v.deployer}</div></div>
-          <div><div class="kv-k">ΔV Margin</div><div class="kv-v pass">${v.dvMargin}</div></div>
+          <div><div class="kv-k">Injection ΔV Margin</div><div class="kv-v pass">${v.dvMargin}</div></div>
           <div><div class="kv-k">Risk Score</div><div class="kv-v ${i<1?'pass':'warn'}">${v.risk}</div></div>
         </div>
-        <div class="bar-row"><div class="bar-label-row"><span class="bar-lbl">Manifest Fill</span><span class="bar-pct">${Math.round(v.util*100)}%</span></div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(v.util*100)}%;background:#00d4ff"></div></div></div>
-        <div class="bar-row"><div class="bar-label-row"><span class="bar-lbl">Compatibility</span><span class="bar-pct">${v.compat}/100</span></div><div class="bar-track"><div class="bar-fill" style="width:${v.compat}%;background:#00d4ff"></div></div></div>
+        <div class="bar-row"><div class="bar-label-row"><span class="bar-lbl">Manifest Fill</span><span class="bar-pct">${Math.round(v.util*100)}%</span></div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(v.util*100)}%;background:var(--acc)"></div></div></div>
+        <div class="bar-row"><div class="bar-label-row"><span class="bar-lbl">Compatibility</span><span class="bar-pct">${v.compat}/100</span></div><div class="bar-track"><div class="bar-fill" style="width:${v.compat}%;background:var(--acc)"></div></div></div>
         <div class="bar-row"><div class="bar-label-row"><span class="bar-lbl">Schedule Prob.</span><span class="bar-pct">${Math.round(v.schedProb*100)}%</span></div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(v.schedProb*100)}%;background:${v.schedProb>.8?'var(--pass)':'var(--warn)'}"></div></div></div>
       </div>
       <div class="opt-tags">
@@ -1490,7 +1864,7 @@ function renderResults(){
       </div>
       <div class="opt-actions">
         <button class="act-btn primary" onclick="event.stopPropagation();selectOpt(${i})">View Fairing</button>
-        <button class="act-btn" onclick="event.stopPropagation()">Request Slot</button>
+        <button class="act-btn" onclick="event.stopPropagation()">Book Launch</button>
         <button class="act-btn" onclick="event.stopPropagation()">Compare</button>
       </div>
     </div>`).join('');
