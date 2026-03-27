@@ -1309,7 +1309,7 @@ function buildFairingScene(vIdx) {
   fairingGroup.visible = S.showFairing;
   espaGroup.visible    = S.showAdapters;
   mountGroup.visible   = false; // revealed after solve completes
-  payloadGroup.visible = true;
+  payloadGroup.visible = false; // hidden until simulation runs
 
   // Cache per-frame render targets to avoid allocations in renderLoop
   userPayloadBodyMat = null;
