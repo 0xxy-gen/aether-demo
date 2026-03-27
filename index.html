@@ -704,11 +704,9 @@ function buildCubeSatDeployerSVG() {
     : Math.max(1, Math.round((S.envL * S.envW * S.envH) / (100 * 100 * 114)));
   const userLabel = preset ? preset.name : (userU + 'U');
 
-  // Always a 16U deployer — 4 columns × 4 rows, each cell = 1U
-  // User's satellite takes proportionally correct cells so a 1U looks small
-  const COLS = 4, ROWS = 4;
+  // 16U deployer: 4 cols × 4 rows, each cell = 1U
+  const COLS = 4, ROWS = 4, DEPTH = 0.5;
 
-  // Map U count to grid cell footprint
   let uCols, uRows;
   if      (userU <= 4)  { uCols = 1; uRows = Math.max(1, userU); }
   else if (userU <= 8)  { uCols = 2; uRows = Math.ceil(userU / 2); }
@@ -716,54 +714,72 @@ function buildCubeSatDeployerSVG() {
   else                  { uCols = 4; uRows = 4; }
   uRows = Math.min(uRows, ROWS); uCols = Math.min(uCols, COLS);
 
-  const W = 196, H = 96;
-  const PAD = 7, GAP = 3;
-  const gridW = W - 2 * PAD, gridH = H - 2 * PAD;
-  const cellW = (gridW - GAP * (COLS - 1)) / COLS;
-  const cellH = (gridH - GAP * (ROWS - 1)) / ROWS;
+  // Isometric projection — origin at world(0,0,0) = bottom-left corner of front face
+  // X axis: rightward columns, Y axis: upward rows, Z axis: depth (into screen)
+  const W = 196, H = 116;
+  const ox = 58, oy = 54; // SVG coords of world origin
+  const SX = 22, SY = 13, RH = 11; // iso scale factors
 
-  let markup = '';
+  const iso = (x, y, z) => [
+    ox + x * SX - z * SX,
+    oy - y * RH + x * SY + z * SY
+  ];
+  const poly = pts => pts.map(([x, y, z]) => {
+    const [sx, sy] = iso(x, y, z);
+    return `${sx.toFixed(1)},${sy.toFixed(1)}`;
+  }).join(' ');
+  const line = ([ax, ay, az], [bx, by, bz], stroke, sw) => {
+    const [asx, asy] = iso(ax, ay, az), [bsx, bsy] = iso(bx, by, bz);
+    return `<line x1="${asx.toFixed(1)}" y1="${asy.toFixed(1)}" x2="${bsx.toFixed(1)}" y2="${bsy.toFixed(1)}" stroke="${stroke}" stroke-width="${sw}" stroke-linecap="round"/>`;
+  };
 
-  // Co-manifest cells
-  for (let row = 0; row < ROWS; row++) {
+  let out = '';
+
+  // ── Depth faces (painted first, behind front face) ───────────
+  out += `<polygon points="${poly([[0,ROWS,0],[COLS,ROWS,0],[COLS,ROWS,DEPTH],[0,ROWS,DEPTH]])}" fill="rgba(255,214,10,.07)" stroke="rgba(255,214,10,.25)" stroke-width=".7"/>`;
+  out += `<polygon points="${poly([[COLS,0,0],[COLS,ROWS,0],[COLS,ROWS,DEPTH],[COLS,0,DEPTH]])}" fill="rgba(255,214,10,.04)" stroke="rgba(255,214,10,.2)" stroke-width=".7"/>`;
+
+  // ── Front face cells ─────────────────────────────────────────
+  // dRow 0 = top of deployer (world y: ROWS-1 → ROWS)
+  for (let dRow = 0; dRow < ROWS; dRow++) {
+    const wy0 = ROWS - dRow - 1, wy1 = ROWS - dRow;
     for (let col = 0; col < COLS; col++) {
-      if (col < uCols && row < uRows) continue; // reserved for user
-      const x = PAD + col * (cellW + GAP);
-      const y = PAD + row * (cellH + GAP);
-      markup += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${cellW.toFixed(1)}" height="${cellH.toFixed(1)}" rx="2" fill="rgba(255,214,10,.08)" stroke="rgba(255,214,10,.38)" stroke-width=".8"/>`;
-      if (cellH >= 16) markup += `<text x="${(x + cellW/2).toFixed(1)}" y="${(y + cellH/2 + 2.5).toFixed(1)}" text-anchor="middle" fill="rgba(255,214,10,.42)" font-family="'IBM Plex Mono',monospace" font-size="5" letter-spacing=".05em">CO-MNFST</text>`;
+      if (col < uCols && dRow < uRows) continue; // user block handled separately
+      out += `<polygon points="${poly([[col,wy0,0],[col+1,wy0,0],[col+1,wy1,0],[col,wy1,0]])}" fill="rgba(255,214,10,.08)" stroke="rgba(255,214,10,.32)" stroke-width=".65"/>`;
+      const [cx, cy] = iso(col + 0.5, wy0 + 0.5, 0);
+      out += `<text x="${cx.toFixed(1)}" y="${(cy + 2).toFixed(1)}" text-anchor="middle" fill="rgba(255,214,10,.36)" font-family="'IBM Plex Mono',monospace" font-size="4.5" letter-spacing=".04em">1U</text>`;
     }
   }
 
-  // User satellite — merged block spanning uCols × uRows cells
-  const ux = PAD;
-  const uy = PAD;
-  const uw = uCols * cellW + (uCols - 1) * GAP;
-  const uh = uRows * cellH + (uRows - 1) * GAP;
-  markup += `<rect x="${ux}" y="${uy}" width="${uw.toFixed(1)}" height="${uh.toFixed(1)}" rx="2" fill="rgba(0,212,255,.13)" stroke="#00d4ff" stroke-width="1.4"/>`;
-  const mx = ux + uw / 2, my = uy + uh / 2;
-  if (uh >= 16) {
-    markup += `<text x="${mx.toFixed(1)}" y="${(my - 4).toFixed(1)}" text-anchor="middle" fill="#00d4ff" font-family="'IBM Plex Mono',monospace" font-size="6.5" letter-spacing=".07em">YOUR SAT</text>`;
-    markup += `<text x="${mx.toFixed(1)}" y="${(my + 6).toFixed(1)}" text-anchor="middle" fill="rgba(0,212,255,.62)" font-family="'IBM Plex Mono',monospace" font-size="6" letter-spacing=".05em">${userLabel}</text>`;
+  // ── User satellite block ──────────────────────────────────────
+  const uwy0 = ROWS - uRows;
+  out += `<polygon points="${poly([[0,uwy0,0],[uCols,uwy0,0],[uCols,ROWS,0],[0,ROWS,0]])}" fill="rgba(0,212,255,.14)" stroke="#00d4ff" stroke-width="1.4"/>`;
+  const [lx, ly] = iso(uCols / 2, uwy0 + uRows / 2, 0);
+  if (uRows * RH >= 20) {
+    out += `<text x="${lx.toFixed(1)}" y="${(ly - 3).toFixed(1)}" text-anchor="middle" fill="#00d4ff" font-family="'IBM Plex Mono',monospace" font-size="6" letter-spacing=".07em">YOUR SAT</text>`;
+    out += `<text x="${lx.toFixed(1)}" y="${(ly + 6).toFixed(1)}" text-anchor="middle" fill="rgba(0,212,255,.62)" font-family="'IBM Plex Mono',monospace" font-size="5.5" letter-spacing=".05em">${userLabel}</text>`;
   } else {
-    markup += `<text x="${mx.toFixed(1)}" y="${(my + 2.5).toFixed(1)}" text-anchor="middle" fill="#00d4ff" font-family="'IBM Plex Mono',monospace" font-size="5.5" letter-spacing=".05em">YOUR SAT · ${userLabel}</text>`;
+    out += `<text x="${lx.toFixed(1)}" y="${(ly + 2.5).toFixed(1)}" text-anchor="middle" fill="#00d4ff" font-family="'IBM Plex Mono',monospace" font-size="4.5" letter-spacing=".05em">YOUR SAT · ${userLabel}</text>`;
   }
 
-  // Teal L-bracket corner rails — matches real deployer edge clips
-  const cs = 11, sw = 3, rc = 'rgba(0,212,255,.8)';
-  const x0 = PAD, y0 = PAD, x1 = W - PAD, y1 = H - PAD;
-  const brackets = [
-    `M ${x0+cs},${y0} L ${x0},${y0} L ${x0},${y0+cs}`,
-    `M ${x1-cs},${y0} L ${x1},${y0} L ${x1},${y0+cs}`,
-    `M ${x0},${y1-cs} L ${x0},${y1} L ${x0+cs},${y1}`,
-    `M ${x1},${y1-cs} L ${x1},${y1} L ${x1-cs},${y1}`,
-  ].map(d => `<path d="${d}" fill="none" stroke="${rc}" stroke-width="${sw}" stroke-linecap="round"/>`).join('');
+  // ── Structural frame + teal corner rails ─────────────────────
+  const rc = 'rgba(0,212,255,.82)', rw = 2.5;
+  const gc = 'rgba(255,214,10,.4)',  gw = 1;
+  // Front face perimeter
+  out += line([0,0,0],[0,ROWS,0], rc, rw);
+  out += line([COLS,0,0],[COLS,ROWS,0], rc, rw);
+  out += line([0,ROWS,0],[COLS,ROWS,0], rc, rw);
+  out += line([0,0,0],[COLS,0,0], rc, rw);
+  // Depth edges (box sides)
+  out += line([0,ROWS,0],[0,ROWS,DEPTH], rc, rw);
+  out += line([COLS,ROWS,0],[COLS,ROWS,DEPTH], rc, rw);
+  out += line([0,0,0],[0,0,DEPTH], rc, rw);
+  out += line([COLS,0,0],[COLS,0,DEPTH], rc, rw);
+  // Back edges (top face back & right face back)
+  out += line([0,ROWS,DEPTH],[COLS,ROWS,DEPTH], gc, gw);
+  out += line([COLS,0,DEPTH],[COLS,ROWS,DEPTH], gc, gw);
 
-  el.innerHTML = `<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg" style="display:block;margin-top:5px">
-    <rect x="${PAD}" y="${PAD}" width="${W-2*PAD}" height="${H-2*PAD}" rx="3" fill="rgba(8,10,18,.6)" stroke="rgba(255,214,10,.18)" stroke-width=".8"/>
-    ${markup}
-    ${brackets}
-  </svg>`;
+  el.innerHTML = `<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg" style="display:block;margin-top:5px">${out}</svg>`;
 }
 
 function updateCubeSatDeployerHint() {
@@ -774,7 +790,7 @@ function updateCubeSatDeployerHint() {
   const showHint = S.showFairing && shouldRecommendCubeSatDeployer();
   if (showHint) buildCubeSatDeployerSVG();
   hint.classList.toggle('show', showHint);
-  phaseLabel.style.top = showHint ? '174px' : '12px';
+  phaseLabel.style.top = showHint ? '186px' : '12px';
 }
 
 function buildVehicleFairingGeometry(v, fairingOffsetY) {
