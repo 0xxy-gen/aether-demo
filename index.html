@@ -704,19 +704,19 @@ function buildCubeSatDeployerSVG() {
     : Math.max(1, Math.round((S.envL * S.envW * S.envH) / (100 * 100 * 114)));
   const userLabel = preset ? preset.name : (userU + 'U');
 
-  // Grid layout: front-face view, always 3 columns (standard deployer width)
-  // ≤6U → 3×2 grid (6U deployer);  7–12U → 3×4 grid (12U deployer)
-  const COLS = 3;
-  const ROWS = userU <= 6 ? 2 : 4;
+  // Always a 16U deployer — 4 columns × 4 rows, each cell = 1U
+  // User's satellite takes proportionally correct cells so a 1U looks small
+  const COLS = 4, ROWS = 4;
 
-  // How many grid cells the user's sat spans (each cell = 1U in height, 1/3 width)
+  // Map U count to grid cell footprint
   let uCols, uRows;
-  if (userU <= 3)      { uCols = 1; uRows = Math.max(1, userU); }
-  else if (userU <= 6) { uCols = 2; uRows = Math.ceil(userU / 2); }
-  else                 { uCols = 3; uRows = 4; }
-  uRows = Math.min(uRows, ROWS);
+  if      (userU <= 4)  { uCols = 1; uRows = Math.max(1, userU); }
+  else if (userU <= 8)  { uCols = 2; uRows = Math.ceil(userU / 2); }
+  else if (userU <= 12) { uCols = 3; uRows = Math.ceil(userU / 3); }
+  else                  { uCols = 4; uRows = 4; }
+  uRows = Math.min(uRows, ROWS); uCols = Math.min(uCols, COLS);
 
-  const W = 196, H = 90;
+  const W = 196, H = 96;
   const PAD = 7, GAP = 3;
   const gridW = W - 2 * PAD, gridH = H - 2 * PAD;
   const cellW = (gridW - GAP * (COLS - 1)) / COLS;
@@ -731,7 +731,7 @@ function buildCubeSatDeployerSVG() {
       const x = PAD + col * (cellW + GAP);
       const y = PAD + row * (cellH + GAP);
       markup += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${cellW.toFixed(1)}" height="${cellH.toFixed(1)}" rx="2" fill="rgba(255,214,10,.08)" stroke="rgba(255,214,10,.38)" stroke-width=".8"/>`;
-      if (cellH >= 12) markup += `<text x="${(x + cellW/2).toFixed(1)}" y="${(y + cellH/2 + 2.5).toFixed(1)}" text-anchor="middle" fill="rgba(255,214,10,.42)" font-family="'IBM Plex Mono',monospace" font-size="5" letter-spacing=".05em">CO-MNFST</text>`;
+      if (cellH >= 16) markup += `<text x="${(x + cellW/2).toFixed(1)}" y="${(y + cellH/2 + 2.5).toFixed(1)}" text-anchor="middle" fill="rgba(255,214,10,.42)" font-family="'IBM Plex Mono',monospace" font-size="5" letter-spacing=".05em">CO-MNFST</text>`;
     }
   }
 
@@ -774,7 +774,7 @@ function updateCubeSatDeployerHint() {
   const showHint = S.showFairing && shouldRecommendCubeSatDeployer();
   if (showHint) buildCubeSatDeployerSVG();
   hint.classList.toggle('show', showHint);
-  phaseLabel.style.top = showHint ? '168px' : '12px';
+  phaseLabel.style.top = showHint ? '174px' : '12px';
 }
 
 function buildVehicleFairingGeometry(v, fairingOffsetY) {
