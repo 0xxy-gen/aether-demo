@@ -704,61 +704,65 @@ function buildCubeSatDeployerSVG() {
     : Math.max(1, Math.round((S.envL * S.envW * S.envH) / (100 * 100 * 114)));
   const userLabel = preset ? preset.name : (userU + 'U');
 
-  const TOTAL_U  = userU <= 6 ? 6 : 12;
-  const W = 196, H = 92;
-  const bx = 8, by = 5, bw = 180, bh = 78;
-  const RW = 5;
-  const uH = bh / TOTAL_U;
-  const cw = bw - RW * 2 - 2;
-  const cx = bx + RW + 1;
+  // Grid layout: front-face view, always 3 columns (standard deployer width)
+  // ≤6U → 3×2 grid (6U deployer);  7–12U → 3×4 grid (12U deployer)
+  const COLS = 3;
+  const ROWS = userU <= 6 ? 2 : 4;
 
-  const userStartU = Math.floor((TOTAL_U - Math.min(userU, TOTAL_U)) / 2);
-  const userEndU   = userStartU + Math.min(userU, TOTAL_U);
+  // How many grid cells the user's sat spans (each cell = 1U in height, 1/3 width)
+  let uCols, uRows;
+  if (userU <= 3)      { uCols = 1; uRows = Math.max(1, userU); }
+  else if (userU <= 6) { uCols = 2; uRows = Math.ceil(userU / 2); }
+  else                 { uCols = 3; uRows = 4; }
+  uRows = Math.min(uRows, ROWS);
 
-  let cells = '';
+  const W = 196, H = 90;
+  const PAD = 7, GAP = 3;
+  const gridW = W - 2 * PAD, gridH = H - 2 * PAD;
+  const cellW = (gridW - GAP * (COLS - 1)) / COLS;
+  const cellH = (gridH - GAP * (ROWS - 1)) / ROWS;
 
-  const fillBlocks = (fromU, toU) => {
-    const blkU = TOTAL_U <= 6 ? 1 : 3;
-    let u = fromU;
-    while (u < toU) {
-      const su = Math.min(blkU, toU - u);
-      const y = by + u * uH, h = su * uH - 1;
-      cells += `<rect x="${cx}" y="${y.toFixed(1)}" width="${cw}" height="${h.toFixed(1)}" rx="1" fill="rgba(255,214,10,.09)" stroke="rgba(255,214,10,.4)" stroke-width=".8"/>`;
-      if (h >= 8) cells += `<text x="${(cx + cw / 2).toFixed(1)}" y="${(y + h / 2 + 2.3).toFixed(1)}" text-anchor="middle" fill="rgba(255,214,10,.52)" font-family="'IBM Plex Mono',monospace" font-size="5.5" letter-spacing=".06em">${su}U CO-MNFST</text>`;
-      u += su;
+  let markup = '';
+
+  // Co-manifest cells
+  for (let row = 0; row < ROWS; row++) {
+    for (let col = 0; col < COLS; col++) {
+      if (col < uCols && row < uRows) continue; // reserved for user
+      const x = PAD + col * (cellW + GAP);
+      const y = PAD + row * (cellH + GAP);
+      markup += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${cellW.toFixed(1)}" height="${cellH.toFixed(1)}" rx="2" fill="rgba(255,214,10,.08)" stroke="rgba(255,214,10,.38)" stroke-width=".8"/>`;
+      if (cellH >= 12) markup += `<text x="${(x + cellW/2).toFixed(1)}" y="${(y + cellH/2 + 2.5).toFixed(1)}" text-anchor="middle" fill="rgba(255,214,10,.42)" font-family="'IBM Plex Mono',monospace" font-size="5" letter-spacing=".05em">CO-MNFST</text>`;
     }
-  };
-
-  fillBlocks(0, userStartU);
-
-  const uy = by + userStartU * uH, uh = Math.min(userU, TOTAL_U) * uH - 1;
-  cells += `<rect x="${cx}" y="${uy.toFixed(1)}" width="${cw}" height="${uh.toFixed(1)}" rx="1" fill="rgba(0,212,255,.13)" stroke="#00d4ff" stroke-width="1.3"/>`;
-  const mid = uy + uh / 2;
-  if (uh >= 14) {
-    cells += `<text x="${(cx + cw / 2).toFixed(1)}" y="${(mid - 3).toFixed(1)}" text-anchor="middle" fill="#00d4ff" font-family="'IBM Plex Mono',monospace" font-size="6.5" letter-spacing=".08em">YOUR SAT</text>`;
-    cells += `<text x="${(cx + cw / 2).toFixed(1)}" y="${(mid + 7).toFixed(1)}" text-anchor="middle" fill="rgba(0,212,255,.65)" font-family="'IBM Plex Mono',monospace" font-size="6" letter-spacing=".05em">${userLabel}</text>`;
-  } else {
-    cells += `<text x="${(cx + cw / 2).toFixed(1)}" y="${(mid + 2.3).toFixed(1)}" text-anchor="middle" fill="#00d4ff" font-family="'IBM Plex Mono',monospace" font-size="5.5" letter-spacing=".06em">YOUR SAT · ${userLabel}</text>`;
   }
 
-  fillBlocks(userEndU, TOTAL_U);
+  // User satellite — merged block spanning uCols × uRows cells
+  const ux = PAD;
+  const uy = PAD;
+  const uw = uCols * cellW + (uCols - 1) * GAP;
+  const uh = uRows * cellH + (uRows - 1) * GAP;
+  markup += `<rect x="${ux}" y="${uy}" width="${uw.toFixed(1)}" height="${uh.toFixed(1)}" rx="2" fill="rgba(0,212,255,.13)" stroke="#00d4ff" stroke-width="1.4"/>`;
+  const mx = ux + uw / 2, my = uy + uh / 2;
+  if (uh >= 16) {
+    markup += `<text x="${mx.toFixed(1)}" y="${(my - 4).toFixed(1)}" text-anchor="middle" fill="#00d4ff" font-family="'IBM Plex Mono',monospace" font-size="6.5" letter-spacing=".07em">YOUR SAT</text>`;
+    markup += `<text x="${mx.toFixed(1)}" y="${(my + 6).toFixed(1)}" text-anchor="middle" fill="rgba(0,212,255,.62)" font-family="'IBM Plex Mono',monospace" font-size="6" letter-spacing=".05em">${userLabel}</text>`;
+  } else {
+    markup += `<text x="${mx.toFixed(1)}" y="${(my + 2.5).toFixed(1)}" text-anchor="middle" fill="#00d4ff" font-family="'IBM Plex Mono',monospace" font-size="5.5" letter-spacing=".05em">YOUR SAT · ${userLabel}</text>`;
+  }
 
-  // Spring ejector at bottom
-  const sy = by + bh + 3;
-  const spring = (x0, len, segs) => {
-    let pts = `${x0},${sy}`;
-    for (let i = 1; i <= segs; i++) pts += ` ${(x0 + i * len / segs).toFixed(1)},${(sy + (i % 2 === 0 ? 0 : 4)).toFixed(1)}`;
-    return pts;
-  };
-  cells += `<polyline points="${spring(bx, 38, 6)}" fill="none" stroke="rgba(255,214,10,.4)" stroke-width="1"/>`;
-  cells += `<polyline points="${spring(bx + bw - 38, 38, 6)}" fill="none" stroke="rgba(255,214,10,.4)" stroke-width="1"/>`;
-  cells += `<line x1="${bx}" y1="${sy + 6}" x2="${bx + bw}" y2="${sy + 6}" stroke="rgba(255,214,10,.25)" stroke-width=".8"/>`;
+  // Teal L-bracket corner rails — matches real deployer edge clips
+  const cs = 11, sw = 3, rc = 'rgba(0,212,255,.8)';
+  const x0 = PAD, y0 = PAD, x1 = W - PAD, y1 = H - PAD;
+  const brackets = [
+    `M ${x0+cs},${y0} L ${x0},${y0} L ${x0},${y0+cs}`,
+    `M ${x1-cs},${y0} L ${x1},${y0} L ${x1},${y0+cs}`,
+    `M ${x0},${y1-cs} L ${x0},${y1} L ${x0+cs},${y1}`,
+    `M ${x1},${y1-cs} L ${x1},${y1} L ${x1-cs},${y1}`,
+  ].map(d => `<path d="${d}" fill="none" stroke="${rc}" stroke-width="${sw}" stroke-linecap="round"/>`).join('');
 
-  el.innerHTML = `<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg" style="display:block;margin-top:5px;overflow:visible">
-    <rect x="${bx}" y="${by}" width="${bw}" height="${bh}" rx="2" fill="rgba(255,214,10,.03)" stroke="rgba(255,214,10,.28)" stroke-width="1"/>
-    <rect x="${bx}" y="${by}" width="${RW}" height="${bh}" rx="1" fill="rgba(255,214,10,.17)"/>
-    <rect x="${bx + bw - RW}" y="${by}" width="${RW}" height="${bh}" rx="1" fill="rgba(255,214,10,.17)"/>
-    ${cells}
+  el.innerHTML = `<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg" style="display:block;margin-top:5px">
+    <rect x="${PAD}" y="${PAD}" width="${W-2*PAD}" height="${H-2*PAD}" rx="3" fill="rgba(8,10,18,.6)" stroke="rgba(255,214,10,.18)" stroke-width=".8"/>
+    ${markup}
+    ${brackets}
   </svg>`;
 }
 
