@@ -277,11 +277,12 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tp);font-
       <div class="panel-hdr-title">Payload + Orbital Definition</div>
     </div>
     <div class="field">
-      <div class="field-label">Payload Role</div>
+      <div class="field-label">Launch Configuration</div>
       <div class="chip-g" id="payload-role-chips">
         <div class="chip on" data-role="auto" onclick="setPayloadRole('auto', this)">Auto</div>
         <div class="chip" data-role="secondary" onclick="setPayloadRole('secondary', this)">Secondary</div>
         <div class="chip" data-role="primary" onclick="setPayloadRole('primary', this)">Primary</div>
+        <div class="chip" data-role="dedicated" onclick="setPayloadRole('dedicated', this)">Dedicated</div>
       </div>
       <div class="field-note" id="payload-role-note">Auto uses secondary unless it would hit the fairing or another payload.</div>
     </div>
@@ -690,6 +691,11 @@ function updatePayloadRoleNote(mode, canSideMount, usingSideMount) {
   if (!note) return;
 
   note.className = 'field-note';
+  if (mode === 'dedicated') {
+    note.textContent = 'Full vehicle capacity reserved for this payload. No co-manifested payloads.';
+    note.classList.add('pass');
+    return;
+  }
   if (mode === 'primary') {
     note.textContent = 'Primary placement forced.';
     return;
