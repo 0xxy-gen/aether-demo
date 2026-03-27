@@ -320,9 +320,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tp);font-
     <div class="vp-canvas-wrap">
       <canvas id="three-canvas"></canvas>
       <div class="cubesat-reco" id="cubesat-reco">
-        <strong>CUBESAT DEPLOYER</strong>
-        <div id="cubesat-deployer-svg"></div>
-        <div id="cubesat-reco-body"></div>
+        <strong>CUBESAT</strong>
+        Recommend using a CubeSat deployer.
       </div>
       <div class="solve-overlay" id="solve-ol">
         <svg class="solve-ring" width="36" height="36" viewBox="0 0 36 36">
@@ -443,16 +442,6 @@ const CUBESAT_SMALL_VOLUME_MM3 = 226 * 226 * 341;
 
 // Deployer models keyed by standard form factor
 // maxKgPerU: deployer mass limit per U slot
-const DEPLOYER_DATA = {
-  '1U':  { model:'Exolaunch Carbo-3',   operator:'Exolaunch GmbH',  maxKgPerU:1.33, railSpec:'PC/104 ±0.1mm',  sepSwitch:'3× inhibit NanoSS', standard:true  },
-  '2U':  { model:'Exolaunch Carbo-3',   operator:'Exolaunch GmbH',  maxKgPerU:1.33, railSpec:'PC/104 ±0.1mm',  sepSwitch:'3× inhibit NanoSS', standard:true  },
-  '3U':  { model:'Exolaunch Carbo-3',   operator:'Exolaunch GmbH',  maxKgPerU:1.33, railSpec:'PC/104 ±0.1mm',  sepSwitch:'3× inhibit NanoSS', standard:true  },
-  '4U':  { model:'Exolaunch Carbo-6',   operator:'Exolaunch GmbH',  maxKgPerU:2.00, railSpec:'6U tab-deploy',  sepSwitch:'2× inhibit',        standard:true  },
-  '6U':  { model:'Exolaunch Carbo-6',   operator:'Exolaunch GmbH',  maxKgPerU:2.00, railSpec:'6U tab-deploy',  sepSwitch:'2× inhibit',        standard:true  },
-  '12U': { model:'D-Orbit ION SCV004',  operator:'D-Orbit',         maxKgPerU:2.67, railSpec:'12U tab-deploy', sepSwitch:'2× inhibit',        standard:true  },
-};
-const DEPLOYER_NON_STD = { model:null, operator:'TBD — contact operator', maxKgPerU:null, railSpec:'Custom ICD required', sepSwitch:'TBD', standard:false };
-
 // ══════════════════════════════════════════════════════════════
 // VEHICLE DATA
 // ══════════════════════════════════════════════════════════════
@@ -696,133 +685,6 @@ function shouldRecommendCubeSatDeployer() {
   return isCubeSatEnvelope || volumeMm3 <= CUBESAT_SMALL_VOLUME_MM3;
 }
 
-function buildCubeSatDeployerSVG() {
-  const el = document.getElementById('cubesat-deployer-svg');
-  if (!el) return;
-
-  const preset = CUBESAT_PRESETS.find(p => p.l === S.envL && p.w === S.envW && p.h === S.envH);
-  const userU = preset
-    ? (preset.name === '12U' ? 12 : preset.name === '6U' ? 6 : parseInt(preset.name, 10))
-    : Math.max(1, Math.round((S.envL * S.envW * S.envH) / (100 * 100 * 114)));
-  const userLabel = preset ? preset.name : (userU + 'U');
-
-  // 16U deployer: 4 cols × 4 rows, each cell = 1U
-  const COLS = 4, ROWS = 4, DEPTH = 0.8;
-
-  let uCols, uRows;
-  if      (userU <= 4)  { uCols = 1; uRows = Math.max(1, userU); }
-  else if (userU <= 8)  { uCols = 2; uRows = Math.ceil(userU / 2); }
-  else if (userU <= 12) { uCols = 3; uRows = Math.ceil(userU / 3); }
-  else                  { uCols = 4; uRows = 4; }
-  uRows = Math.min(uRows, ROWS); uCols = Math.min(uCols, COLS);
-
-  // Isometric projection — fixed params so cells appear upright (RH >> SY)
-  // SX: horizontal pixels per column, SY: vertical skew per column, RH: pixels per row
-  const W = 196, H = 130;
-  const SX = 20, SY = 8, RH = 20;
-  const ox = 66, oy = 88; // SVG origin = world(0,0,0) bottom-left of front face
-
-  const iso = (x, y, z) => [
-    ox + x * SX - z * SX,
-    oy - y * RH + x * SY + z * SY
-  ];
-  const poly = pts => pts.map(([x, y, z]) => {
-    const [sx, sy] = iso(x, y, z);
-    return `${sx.toFixed(1)},${sy.toFixed(1)}`;
-  }).join(' ');
-  const ln = ([ax, ay, az], [bx, by, bz], stroke, sw) => {
-    const [asx, asy] = iso(ax, ay, az), [bsx, bsy] = iso(bx, by, bz);
-    return `<line x1="${asx.toFixed(1)}" y1="${asy.toFixed(1)}" x2="${bsx.toFixed(1)}" y2="${bsy.toFixed(1)}" stroke="${stroke}" stroke-width="${sw}" stroke-linecap="round"/>`;
-  };
-
-  let out = '';
-
-  // ── Depth faces (painted first, behind front face) ───────────
-  out += `<polygon points="${poly([[0,ROWS,0],[COLS,ROWS,0],[COLS,ROWS,DEPTH],[0,ROWS,DEPTH]])}" fill="rgba(255,214,10,.07)" stroke="rgba(255,214,10,.25)" stroke-width=".7"/>`;
-  out += `<polygon points="${poly([[COLS,0,0],[COLS,ROWS,0],[COLS,ROWS,DEPTH],[COLS,0,DEPTH]])}" fill="rgba(255,214,10,.04)" stroke="rgba(255,214,10,.2)" stroke-width=".7"/>`;
-
-  // ── Front face cells (dRow 0 = top of deployer) ──────────────
-  for (let dRow = 0; dRow < ROWS; dRow++) {
-    const wy0 = ROWS - dRow - 1, wy1 = ROWS - dRow;
-    for (let col = 0; col < COLS; col++) {
-      if (col < uCols && dRow < uRows) continue;
-      out += `<polygon points="${poly([[col,wy0,0],[col+1,wy0,0],[col+1,wy1,0],[col,wy1,0]])}" fill="rgba(255,214,10,.08)" stroke="rgba(255,214,10,.32)" stroke-width=".65"/>`;
-      const [cx, cy] = iso(col + 0.5, wy0 + 0.5, 0);
-      out += `<text x="${cx.toFixed(1)}" y="${(cy + 2).toFixed(1)}" text-anchor="middle" fill="rgba(255,214,10,.35)" font-family="'IBM Plex Mono',monospace" font-size="4.5" letter-spacing=".04em">1U</text>`;
-    }
-  }
-
-  // ── User satellite block ──────────────────────────────────────
-  const uwy0 = ROWS - uRows;
-  out += `<polygon points="${poly([[0,uwy0,0],[uCols,uwy0,0],[uCols,ROWS,0],[0,ROWS,0]])}" fill="rgba(0,212,255,.14)" stroke="#00d4ff" stroke-width="1.4"/>`;
-  const [lx, ly] = iso(uCols / 2, uwy0 + uRows / 2, 0);
-  if (uRows * RH >= 22) {
-    out += `<text x="${lx.toFixed(1)}" y="${(ly - 3).toFixed(1)}" text-anchor="middle" fill="#00d4ff" font-family="'IBM Plex Mono',monospace" font-size="6" letter-spacing=".07em">YOUR SAT</text>`;
-    out += `<text x="${lx.toFixed(1)}" y="${(ly + 6).toFixed(1)}" text-anchor="middle" fill="rgba(0,212,255,.62)" font-family="'IBM Plex Mono',monospace" font-size="5.5" letter-spacing=".05em">${userLabel}</text>`;
-  } else {
-    out += `<text x="${lx.toFixed(1)}" y="${(ly + 2.5).toFixed(1)}" text-anchor="middle" fill="#00d4ff" font-family="'IBM Plex Mono',monospace" font-size="4.5" letter-spacing=".05em">YOUR SAT · ${userLabel}</text>`;
-  }
-
-  // ── Frame edges + teal corner rails ──────────────────────────
-  const rc = 'rgba(0,212,255,.82)', rw = 2.5;
-  const gc = 'rgba(255,214,10,.35)', gw = 1;
-  out += ln([0,0,0],[0,ROWS,0], rc, rw);
-  out += ln([COLS,0,0],[COLS,ROWS,0], rc, rw);
-  out += ln([0,ROWS,0],[COLS,ROWS,0], rc, rw);
-  out += ln([0,0,0],[COLS,0,0], rc, rw);
-  out += ln([0,ROWS,0],[0,ROWS,DEPTH], rc, rw);
-  out += ln([COLS,ROWS,0],[COLS,ROWS,DEPTH], rc, rw);
-  out += ln([0,0,0],[0,0,DEPTH], rc, rw);
-  out += ln([COLS,0,0],[COLS,0,DEPTH], rc, rw);
-  out += ln([0,ROWS,DEPTH],[COLS,ROWS,DEPTH], gc, gw);
-  out += ln([COLS,0,DEPTH],[COLS,ROWS,DEPTH], gc, gw);
-
-  el.innerHTML = `<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg" style="display:block;margin-top:5px">${out}</svg>`;
-}
-
-function buildCubeSatDeployerBody() {
-  const el = document.getElementById('cubesat-reco-body');
-  if (!el) return;
-
-  const preset = CUBESAT_PRESETS.find(p => p.l === S.envL && p.w === S.envW && p.h === S.envH);
-  const userU = preset
-    ? (preset.name === '12U' ? 12 : preset.name === '6U' ? 6 : parseInt(preset.name, 10))
-    : Math.max(1, Math.round((S.envL * S.envW * S.envH) / (100 * 100 * 114)));
-  const userLabel = preset ? preset.name : (userU + 'U');
-  const dep = DEPLOYER_DATA[userLabel] || DEPLOYER_NON_STD;
-
-  const maxMass = dep.maxKgPerU !== null ? +(dep.maxKgPerU * userU).toFixed(1) : null;
-  const massOk  = maxMass !== null ? S.mass <= maxMass : null;
-
-  const div  = (s='rgba(255,214,10,.2)') => `<div style="border-top:1px solid ${s};margin:5px 0 4px"></div>`;
-  const kv   = (k, v, vc='#ffd94a') => `<div style="display:flex;justify-content:space-between;gap:6px;margin-bottom:2px"><span style="color:rgba(255,214,10,.5);font-size:6.5px;flex-shrink:0">${k}</span><span style="font-size:6.5px;color:${vc};text-align:right">${v}</span></div>`;
-
-  let html = '';
-
-  if (!dep.standard) {
-    html += `<div style="color:#ff8c42;font-size:7px;letter-spacing:.06em;margin-bottom:4px">⚠ NON-STANDARD FORM FACTOR<br>VERIFY DEPLOYER COMPATIBILITY</div>`;
-  }
-
-  html += div();
-  if (dep.model) html += kv('MODEL', dep.model, '#ffe680');
-  html += kv('OPERATOR', dep.operator);
-
-  if (massOk !== null) {
-    const mc = massOk ? '#00d4ff' : '#ff8c42';
-    const ms = massOk ? '✓' : '⚠ EXCEEDS';
-    html += kv('MASS BUDGET', `${S.mass} / ${maxMass} kg  ${ms}`, mc);
-  } else {
-    html += kv('MASS BUDGET', 'Verify with operator', '#ff8c42');
-  }
-
-  html += div('rgba(255,214,10,.12)');
-  html += `<div style="color:rgba(255,214,10,.45);font-size:6px;letter-spacing:.09em;margin-bottom:3px">INTERFACE REQUIREMENTS</div>`;
-  html += kv('RAIL SPEC', dep.railSpec);
-  html += kv('SEP SWITCH', dep.sepSwitch);
-  html += kv('RF COORD', 'ICD required w/ co-manifest', 'rgba(255,214,10,.65)');
-
-  el.innerHTML = html;
-}
 
 function updateCubeSatDeployerHint() {
   const hint = document.getElementById('cubesat-reco');
@@ -830,9 +692,8 @@ function updateCubeSatDeployerHint() {
   if (!hint || !phaseLabel) return;
 
   const showHint = S.showFairing && shouldRecommendCubeSatDeployer();
-  if (showHint) { buildCubeSatDeployerSVG(); buildCubeSatDeployerBody(); }
   hint.classList.toggle('show', showHint);
-  phaseLabel.style.top = showHint ? '268px' : '12px';
+  phaseLabel.style.top = showHint ? '68px' : '12px';
 }
 
 function buildVehicleFairingGeometry(v, fairingOffsetY) {
