@@ -105,8 +105,42 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tp);font-
 .phase-label{position:absolute;top:12px;right:14px;font-family:var(--mono);font-size:9px;font-weight:500;color:var(--acc);letter-spacing:.1em;z-index:5;pointer-events:none;text-align:right}
 .phase-sub{font-size:8px;color:var(--td);margin-top:2px}
 .cubesat-reco{position:absolute;top:12px;right:14px;width:220px;background:rgba(255,214,10,.14);border:1px solid rgba(255,214,10,.7);box-shadow:0 0 18px rgba(255,214,10,.12);padding:9px 11px;font-family:var(--mono);font-size:9px;line-height:1.45;color:#ffd94a;letter-spacing:.04em;text-transform:uppercase;z-index:6;pointer-events:none;display:none}
-.cubesat-reco.show{display:block}
+.cubesat-reco.show{display:block;pointer-events:auto}
 .cubesat-reco strong{display:block;color:#ffe680;font-size:8px;letter-spacing:.12em;margin-bottom:3px}
+.dm-trigger{display:block;width:100%;margin-top:8px;padding:5px 8px;background:rgba(255,214,10,.1);border:1px solid rgba(255,214,10,.55);color:#ffd94a;font-family:var(--mono);font-size:7.5px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;text-align:center}
+.dm-trigger:hover{background:rgba(255,214,10,.2)}
+.deployer-modal{position:fixed;inset:0;background:#08090d;z-index:200;display:none;flex-direction:column;overflow-y:auto}
+.deployer-modal.show{display:flex}
+.dm-hdr{display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid rgba(255,255,255,.07);flex-shrink:0;position:sticky;top:0;background:#08090d;z-index:1}
+.dm-back{background:none;border:1px solid rgba(0,212,255,.4);color:#00d4ff;font-family:var(--mono);font-size:8px;letter-spacing:.1em;padding:5px 10px;cursor:pointer;text-transform:uppercase;flex-shrink:0}
+.dm-back:hover{background:rgba(0,212,255,.08)}
+.dm-hdr-text{flex:1}
+.dm-hdr-title{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:#fff;text-transform:uppercase}
+.dm-hdr-sub{font-family:var(--mono);font-size:7.5px;color:rgba(255,255,255,.35);letter-spacing:.06em;margin-top:2px;text-transform:uppercase}
+.dm-body{padding:20px;flex:1;max-width:900px;width:100%;margin:0 auto}
+.dm-payload-bar{display:flex;flex-wrap:wrap;gap:16px;padding:10px 14px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.02);margin-bottom:20px}
+.dm-pkv{font-family:var(--mono);font-size:8px}
+.dm-pkv b{color:rgba(255,255,255,.35);letter-spacing:.08em;font-weight:400;text-transform:uppercase;margin-right:6px}
+.dm-pkv span{color:#fff}
+.dm-section-lbl{font-family:var(--mono);font-size:7.5px;color:rgba(255,255,255,.3);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px}
+.dm-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin-bottom:24px}
+.dm-card{border:1px solid rgba(255,255,255,.07);padding:14px 16px;background:rgba(255,255,255,.02)}
+.dm-card.best{border-color:rgba(0,212,255,.45);background:rgba(0,212,255,.04)}
+.dm-card.partial{border-color:rgba(255,214,10,.3);background:rgba(255,214,10,.02)}
+.dm-card.nomatch{opacity:.5}
+.dm-card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px}
+.dm-card-model{font-family:var(--mono);font-size:9.5px;color:#fff;letter-spacing:.05em}
+.dm-card-badge{font-family:var(--mono);font-size:6.5px;letter-spacing:.08em;padding:2px 5px;border:1px solid;flex-shrink:0;margin-left:8px}
+.dm-card-badge.ok{color:#00d4ff;border-color:rgba(0,212,255,.45)}
+.dm-card-badge.warn{color:#ff8c42;border-color:rgba(255,140,66,.45)}
+.dm-card-badge.no{color:rgba(255,255,255,.3);border-color:rgba(255,255,255,.15)}
+.dm-card-op{font-family:var(--mono);font-size:7px;color:rgba(255,255,255,.35);letter-spacing:.04em;margin-bottom:10px}
+.dm-card-row{display:flex;justify-content:space-between;padding:3px 0;border-top:1px solid rgba(255,255,255,.05)}
+.dm-card-row span:first-child{font-family:var(--mono);font-size:6.5px;color:rgba(255,255,255,.3);letter-spacing:.07em;text-transform:uppercase}
+.dm-card-row span:last-child{font-family:var(--mono);font-size:6.5px;color:rgba(255,255,255,.72);text-align:right}
+.dm-card-row.highlight span:last-child{color:#00d4ff}
+.dm-card-row.flagged span:last-child{color:#ff8c42}
+.dm-note{font-family:var(--mono);font-size:7px;color:rgba(255,255,255,.2);letter-spacing:.04em;line-height:1.7;margin-top:4px}
 
 .solve-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(8,9,13,.75);display:none;align-items:center;justify-content:center;flex-direction:column;gap:10px;z-index:10}
 .solve-overlay.show{display:flex}
@@ -322,6 +356,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tp);font-
       <div class="cubesat-reco" id="cubesat-reco">
         <strong>CUBESAT</strong>
         Recommend using a CubeSat deployer.
+        <button class="dm-trigger" onclick="openDeployerModal()">Get matched to a deployer →</button>
       </div>
       <div class="solve-overlay" id="solve-ol">
         <svg class="solve-ring" width="36" height="36" viewBox="0 0 36 36">
@@ -2339,6 +2374,97 @@ function updateTraceLog(){
 }
 
 selectOpt(0);
+
+// ══════════════════════════════════════════════════════════════
+// DEPLOYER MATCHING MODAL
+// ══════════════════════════════════════════════════════════════
+const DEPLOYER_OPTIONS = [
+  { model:'Exolaunch Carbo-3',   operator:'Exolaunch GmbH',  forms:['1U','2U','3U'],       maxKgPerU:1.33, railSpec:'PC/104 ±0.1mm',  sepSwitch:'3× inhibit NanoSS', tipOff:'<2°/s', vehicles:['Falcon 9 Block 5'] },
+  { model:'Exolaunch Carbo-6',   operator:'Exolaunch GmbH',  forms:['4U','6U'],             maxKgPerU:2.00, railSpec:'6U tab-deploy',   sepSwitch:'2× inhibit',        tipOff:'<3°/s', vehicles:['Falcon 9 Block 5'] },
+  { model:'NanoRacks NRCSD-16',  operator:'Voyager Space',   forms:['1U','2U','3U','6U'],   maxKgPerU:1.50, railSpec:'PC/104 ±0.15mm', sepSwitch:'3× inhibit',        tipOff:'<3°/s', vehicles:['Falcon 9 Block 5'] },
+  { model:'D-Orbit ION SCV004',  operator:'D-Orbit',         forms:['6U','12U'],            maxKgPerU:2.67, railSpec:'12U tab-deploy',  sepSwitch:'2× inhibit',        tipOff:'<5°/s', vehicles:['Falcon 9 Block 5','SSLV Rideshare'] },
+  { model:'Momentus Vigoride',   operator:'Momentus',        forms:['6U','12U'],            maxKgPerU:2.50, railSpec:'6U / 12U tab',    sepSwitch:'2× inhibit',        tipOff:'<4°/s', vehicles:['Falcon 9 Block 5'] },
+  { model:'ISIPOD 3U',           operator:'ISISpace',        forms:['1U','2U','3U'],        maxKgPerU:1.33, railSpec:'PC/104 ±0.1mm',  sepSwitch:'2× inhibit',        tipOff:'<2°/s', vehicles:['SSLV Rideshare'] },
+];
+
+function openDeployerModal() {
+  buildDeployerModal();
+  document.getElementById('deployer-modal').classList.add('show');
+}
+
+function closeDeployerModal() {
+  document.getElementById('deployer-modal').classList.remove('show');
+}
+
+function buildDeployerModal() {
+  const preset   = CUBESAT_PRESETS.find(p => p.l === S.envL && p.w === S.envW && p.h === S.envH);
+  const userLabel = preset ? preset.name : null;
+  const userU    = preset ? parseInt(preset.name, 10) : null;
+  const vehicle  = VEHICLES[S.selOpt];
+
+  // Payload summary bar
+  document.getElementById('dm-hdr-sub').textContent =
+    `Matching your ${userLabel || 'custom'} payload against available deployers`;
+  document.getElementById('dm-payload-bar').innerHTML = [
+    ['Form factor', userLabel ? userLabel : `Custom (${S.envL}×${S.envW}×${S.envH} mm)`],
+    ['Mass',        `${S.mass} kg`],
+    ['Orbit',       `${S.alt} km · ${S.inc}°`],
+    ['Vehicle',     vehicle.name],
+  ].map(([k,v]) => `<div class="dm-pkv"><b>${k}</b><span>${v}</span></div>`).join('');
+
+  // Score and sort deployer options
+  const scored = DEPLOYER_OPTIONS.map(dep => {
+    const formMatch  = userLabel ? dep.forms.includes(userLabel) : false;
+    const maxMass    = userU ? +(dep.maxKgPerU * userU).toFixed(1) : null;
+    const massOk     = maxMass !== null ? S.mass <= maxMass : null;
+    const onVehicle  = dep.vehicles.some(v => vehicle.name.startsWith(v.split(' ')[0]));
+    const score      = (formMatch ? 4 : 0) + (massOk ? 2 : 0) + (onVehicle ? 1 : 0);
+    return { ...dep, formMatch, maxMass, massOk, onVehicle, score };
+  }).sort((a, b) => b.score - a.score);
+
+  // Render cards
+  document.getElementById('dm-cards').innerHTML = scored.map(dep => {
+    const cls   = dep.score >= 6 ? 'best' : dep.score >= 3 ? 'partial' : 'nomatch';
+    const badge = dep.score >= 6 ? ['ok','MATCHED ✓'] : dep.score >= 3 ? ['warn','PARTIAL'] : ['no','NO MATCH'];
+    const massStr = dep.maxMass !== null
+      ? `${S.mass} / ${dep.maxMass} kg ${dep.massOk ? '✓' : '⚠'}`
+      : '—';
+    const massCls = dep.massOk === false ? 'flagged' : dep.massOk ? 'highlight' : '';
+    const vehStr  = dep.vehicles.join(', ');
+    const vehCls  = dep.onVehicle ? 'highlight' : 'flagged';
+    return `<div class="dm-card ${cls}">
+      <div class="dm-card-top">
+        <div class="dm-card-model">${dep.model}</div>
+        <span class="dm-card-badge ${badge[0]}">${badge[1]}</span>
+      </div>
+      <div class="dm-card-op">${dep.operator}</div>
+      <div class="dm-card-row"><span>Forms</span><span>${dep.forms.join(' / ')}</span></div>
+      <div class="dm-card-row ${massCls}"><span>Mass limit</span><span>${massStr}</span></div>
+      <div class="dm-card-row"><span>Rail spec</span><span>${dep.railSpec}</span></div>
+      <div class="dm-card-row"><span>Sep switch</span><span>${dep.sepSwitch}</span></div>
+      <div class="dm-card-row"><span>Tip-off</span><span>${dep.tipOff}</span></div>
+      <div class="dm-card-row ${vehCls}"><span>Vehicles</span><span>${vehStr}</span></div>
+    </div>`;
+  }).join('');
+}
+
 </script>
+
+<div class="deployer-modal" id="deployer-modal">
+  <div class="dm-hdr">
+    <button class="dm-back" onclick="closeDeployerModal()">← Back</button>
+    <div class="dm-hdr-text">
+      <div class="dm-hdr-title">Deployer Matching</div>
+      <div class="dm-hdr-sub" id="dm-hdr-sub">Matching against your payload specs</div>
+    </div>
+  </div>
+  <div class="dm-body">
+    <div class="dm-payload-bar" id="dm-payload-bar"></div>
+    <div class="dm-section-lbl">Compatible deployers</div>
+    <div class="dm-cards" id="dm-cards"></div>
+    <div class="dm-note">* Indicative data for planning purposes. Mass limits, rail specs, and vehicle availability should be verified directly with the deployer operator. RF coordination ICDs are required for all co-manifested payloads.</div>
+  </div>
+</div>
+
 </body>
 </html>
