@@ -104,7 +104,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tp);font-
 .ann-div{border-top:1px solid var(--border);margin:5px 0}
 .phase-label{position:absolute;top:12px;right:14px;font-family:var(--mono);font-size:9px;font-weight:500;color:var(--acc);letter-spacing:.1em;z-index:5;pointer-events:none;text-align:right}
 .phase-sub{font-size:8px;color:var(--td);margin-top:2px}
-.cubesat-reco{position:absolute;top:12px;right:14px;max-width:220px;background:rgba(255,214,10,.14);border:1px solid rgba(255,214,10,.7);box-shadow:0 0 18px rgba(255,214,10,.12);padding:9px 11px;font-family:var(--mono);font-size:9px;line-height:1.45;color:#ffd94a;letter-spacing:.04em;text-transform:uppercase;z-index:6;pointer-events:none;display:none}
+.cubesat-reco{position:absolute;top:12px;right:14px;width:220px;background:rgba(255,214,10,.14);border:1px solid rgba(255,214,10,.7);box-shadow:0 0 18px rgba(255,214,10,.12);padding:9px 11px;font-family:var(--mono);font-size:9px;line-height:1.45;color:#ffd94a;letter-spacing:.04em;text-transform:uppercase;z-index:6;pointer-events:none;display:none}
 .cubesat-reco.show{display:block}
 .cubesat-reco strong{display:block;color:#ffe680;font-size:8px;letter-spacing:.12em;margin-bottom:3px}
 
@@ -330,7 +330,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tp);font-
     <div class="vp-canvas-wrap">
       <canvas id="three-canvas"></canvas>
       <div class="cubesat-reco" id="cubesat-reco">
-        <strong>CUBESAT</strong>
+        <strong>CUBESAT DEPLOYER</strong>
+        <div id="cubesat-deployer-svg"></div>
         Recommend using a CubeSat deployer.
       </div>
       <div class="solve-overlay" id="solve-ol">
@@ -693,14 +694,83 @@ function shouldRecommendCubeSatDeployer() {
   return isCubeSatEnvelope || volumeMm3 <= CUBESAT_SMALL_VOLUME_MM3;
 }
 
+function buildCubeSatDeployerSVG() {
+  const el = document.getElementById('cubesat-deployer-svg');
+  if (!el) return;
+
+  const preset = CUBESAT_PRESETS.find(p => p.l === S.envL && p.w === S.envW && p.h === S.envH);
+  const userU = preset
+    ? (preset.name === '12U' ? 12 : preset.name === '6U' ? 6 : parseInt(preset.name, 10))
+    : Math.max(1, Math.round((S.envL * S.envW * S.envH) / (100 * 100 * 114)));
+  const userLabel = preset ? preset.name : (userU + 'U');
+
+  const TOTAL_U  = userU <= 6 ? 6 : 12;
+  const W = 196, H = 92;
+  const bx = 8, by = 5, bw = 180, bh = 78;
+  const RW = 5;
+  const uH = bh / TOTAL_U;
+  const cw = bw - RW * 2 - 2;
+  const cx = bx + RW + 1;
+
+  const userStartU = Math.floor((TOTAL_U - Math.min(userU, TOTAL_U)) / 2);
+  const userEndU   = userStartU + Math.min(userU, TOTAL_U);
+
+  let cells = '';
+
+  const fillBlocks = (fromU, toU) => {
+    const blkU = TOTAL_U <= 6 ? 1 : 3;
+    let u = fromU;
+    while (u < toU) {
+      const su = Math.min(blkU, toU - u);
+      const y = by + u * uH, h = su * uH - 1;
+      cells += `<rect x="${cx}" y="${y.toFixed(1)}" width="${cw}" height="${h.toFixed(1)}" rx="1" fill="rgba(255,214,10,.09)" stroke="rgba(255,214,10,.4)" stroke-width=".8"/>`;
+      if (h >= 8) cells += `<text x="${(cx + cw / 2).toFixed(1)}" y="${(y + h / 2 + 2.3).toFixed(1)}" text-anchor="middle" fill="rgba(255,214,10,.52)" font-family="'IBM Plex Mono',monospace" font-size="5.5" letter-spacing=".06em">${su}U CO-MNFST</text>`;
+      u += su;
+    }
+  };
+
+  fillBlocks(0, userStartU);
+
+  const uy = by + userStartU * uH, uh = Math.min(userU, TOTAL_U) * uH - 1;
+  cells += `<rect x="${cx}" y="${uy.toFixed(1)}" width="${cw}" height="${uh.toFixed(1)}" rx="1" fill="rgba(0,212,255,.13)" stroke="#00d4ff" stroke-width="1.3"/>`;
+  const mid = uy + uh / 2;
+  if (uh >= 14) {
+    cells += `<text x="${(cx + cw / 2).toFixed(1)}" y="${(mid - 3).toFixed(1)}" text-anchor="middle" fill="#00d4ff" font-family="'IBM Plex Mono',monospace" font-size="6.5" letter-spacing=".08em">YOUR SAT</text>`;
+    cells += `<text x="${(cx + cw / 2).toFixed(1)}" y="${(mid + 7).toFixed(1)}" text-anchor="middle" fill="rgba(0,212,255,.65)" font-family="'IBM Plex Mono',monospace" font-size="6" letter-spacing=".05em">${userLabel}</text>`;
+  } else {
+    cells += `<text x="${(cx + cw / 2).toFixed(1)}" y="${(mid + 2.3).toFixed(1)}" text-anchor="middle" fill="#00d4ff" font-family="'IBM Plex Mono',monospace" font-size="5.5" letter-spacing=".06em">YOUR SAT · ${userLabel}</text>`;
+  }
+
+  fillBlocks(userEndU, TOTAL_U);
+
+  // Spring ejector at bottom
+  const sy = by + bh + 3;
+  const spring = (x0, len, segs) => {
+    let pts = `${x0},${sy}`;
+    for (let i = 1; i <= segs; i++) pts += ` ${(x0 + i * len / segs).toFixed(1)},${(sy + (i % 2 === 0 ? 0 : 4)).toFixed(1)}`;
+    return pts;
+  };
+  cells += `<polyline points="${spring(bx, 38, 6)}" fill="none" stroke="rgba(255,214,10,.4)" stroke-width="1"/>`;
+  cells += `<polyline points="${spring(bx + bw - 38, 38, 6)}" fill="none" stroke="rgba(255,214,10,.4)" stroke-width="1"/>`;
+  cells += `<line x1="${bx}" y1="${sy + 6}" x2="${bx + bw}" y2="${sy + 6}" stroke="rgba(255,214,10,.25)" stroke-width=".8"/>`;
+
+  el.innerHTML = `<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg" style="display:block;margin-top:5px;overflow:visible">
+    <rect x="${bx}" y="${by}" width="${bw}" height="${bh}" rx="2" fill="rgba(255,214,10,.03)" stroke="rgba(255,214,10,.28)" stroke-width="1"/>
+    <rect x="${bx}" y="${by}" width="${RW}" height="${bh}" rx="1" fill="rgba(255,214,10,.17)"/>
+    <rect x="${bx + bw - RW}" y="${by}" width="${RW}" height="${bh}" rx="1" fill="rgba(255,214,10,.17)"/>
+    ${cells}
+  </svg>`;
+}
+
 function updateCubeSatDeployerHint() {
   const hint = document.getElementById('cubesat-reco');
   const phaseLabel = document.getElementById('phase-label');
   if (!hint || !phaseLabel) return;
 
   const showHint = S.showFairing && shouldRecommendCubeSatDeployer();
+  if (showHint) buildCubeSatDeployerSVG();
   hint.classList.toggle('show', showHint);
-  phaseLabel.style.top = showHint ? '68px' : '12px';
+  phaseLabel.style.top = showHint ? '168px' : '12px';
 }
 
 function buildVehicleFairingGeometry(v, fairingOffsetY) {
