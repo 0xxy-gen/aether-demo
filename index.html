@@ -276,6 +276,15 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tp);font-
       <div class="panel-hdr-label">01 / Mission Parameters</div>
       <div class="panel-hdr-title">Payload + Orbital Definition</div>
     </div>
+    <div class="field">
+      <div class="field-label">Payload Role</div>
+      <div class="chip-g" id="payload-role-chips">
+        <div class="chip on" data-role="auto" onclick="setPayloadRole('auto', this)">Auto</div>
+        <div class="chip" data-role="secondary" onclick="setPayloadRole('secondary', this)">Secondary</div>
+        <div class="chip" data-role="primary" onclick="setPayloadRole('primary', this)">Primary</div>
+      </div>
+      <div class="field-note" id="payload-role-note">Auto uses secondary unless it would hit the fairing or another payload.</div>
+    </div>
     <div class="field"><div class="field-label">Payload Mass <span class="field-val"><input type="number" class="fnum" id="num-mass" min="1" max="1000" value="682" oninput="vmn('mass',this)" onkeydown="vmKey(event,'mass')" onblur="vmnBlur('mass',this)"> kg</span></div><div class="field-err" id="err-mass"></div></div>
     <div class="field">
       <div class="field-label">Envelope <span style="color:var(--td);font-weight:400">mm</span></div>
@@ -303,15 +312,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tp);font-
         <input type="range" class="frange" id="env-h-sl" min="50" max="5000" value="4200" oninput="onEnvSlider('h')">
         <input type="number" class="env-num" id="env-h" min="50" max="5000" value="4200" oninput="onEnvNum('h')">
       </div>
-    </div>
-    <div class="field">
-      <div class="field-label">Payload Role</div>
-      <div class="chip-g" id="payload-role-chips">
-        <div class="chip on" data-role="auto" onclick="setPayloadRole('auto', this)">Auto</div>
-        <div class="chip" data-role="secondary" onclick="setPayloadRole('secondary', this)">Secondary</div>
-        <div class="chip" data-role="primary" onclick="setPayloadRole('primary', this)">Primary</div>
-      </div>
-      <div class="field-note" id="payload-role-note">Auto uses secondary unless it would hit the fairing or another payload.</div>
     </div>
     <div class="field"><div class="field-label">Target Orbit</div><div class="chip-g"><div class="chip on" onclick="sc(this,'orbit')">SSO</div><div class="chip" onclick="sc(this,'orbit')">LEO</div><div class="chip" onclick="sc(this,'orbit')">MEO</div><div class="chip" onclick="sc(this,'orbit')">GTO</div></div></div>
     <div class="field"><div class="field-label">Altitude <span class="field-val"><input type="number" class="fnum" id="num-alt" min="300" max="1200" value="550" oninput="vmn('alt',this)" onkeydown="vmKey(event,'alt')" onblur="vmnBlur('alt',this)"> km</span></div><div class="field-err" id="err-alt"></div></div>
