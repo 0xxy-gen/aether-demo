@@ -327,7 +327,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tp);font-
       <div class="cst-row" onclick="openTrace()"><div class="cst-name">ORBIT</div><div class="cst-bar-wrap"><div class="cst-bar" style="width:98%;background:var(--pass)"></div></div><div class="cst-detail">+0.2° tol</div><div class="cst-dot pass"></div></div>
       <div class="cst-row" onclick="openTrace()"><div class="cst-name">RAAN</div><div class="cst-bar-wrap"><div class="cst-bar" style="width:82%;background:var(--pass)"></div></div><div class="cst-detail">ΔΩ 14.3°</div><div class="cst-dot pass"></div></div>
       <div class="cst-row" onclick="openTrace()"><div class="cst-name">SCHEDULE</div><div class="cst-bar-wrap"><div class="cst-bar" style="width:89%;background:var(--pass)"></div></div><div class="cst-detail">T-180 days</div><div class="cst-dot pass"></div></div>
-      <div class="cst-row" onclick="openTrace()"><div class="cst-name">REGULATORY</div><div class="cst-bar-wrap"><div class="cst-bar" style="width:60%;background:var(--warn)"></div></div><div class="cst-detail">FCC STA req.</div><div class="cst-dot warn"></div></div>
     </div>
     <button class="run-btn" id="run-btn" onclick="runSolve()"><svg width="10" height="10" viewBox="0 0 10 10"><polygon points="1,0.5 9.5,5 1,9.5" fill="currentColor"/></svg>RUN OPTIMISATION</button>
   </div>
@@ -341,16 +340,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tp);font-
       <button class="vp-btn" id="vb-pl" onclick="setView('side')">Side</button>
       <button class="vp-btn on" id="vb-tr" onclick="toggleFairingShell()" aria-pressed="true">Fairing</button>
       <span style="margin-left:auto;font-size:9px;color:var(--td);letter-spacing:.06em" id="vp-vehicle-lbl">— AWAITING SOLVE —</span>
-    </div>
-    <div class="vp-stats">
-      <div class="vp-stat">
-        <div class="vp-stat-lbl">Manifest Util.</div>
-        <div class="vp-stat-val acc" id="vs-util">—</div>
-      </div>
-      <div class="vp-stat">
-        <div class="vp-stat-lbl">Volume Fill</div>
-        <div class="vp-stat-val" id="vs-vol">—</div>
-      </div>
     </div>
     <div class="vp-canvas-wrap">
       <canvas id="three-canvas"></canvas>
@@ -386,7 +375,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tp);font-
       </div>
       <div class="overlay-ann" id="ann-util" style="display:none">
         <div class="ann-title">Manifest Utilisation</div>
-        <div class="ann-row"><span>Mass fraction</span><span id="an-mf">—</span></div>
+        <div class="ann-row"><span>Manifest utilisation</span><span id="an-mf">—</span></div>
         <div class="ann-row"><span>Volume fraction</span><span id="an-vf">—</span></div>
         <div class="ann-row"><span>Available slots</span><span id="an-sl">—</span></div>
         <div class="ann-row"><span>Structural margin</span><span id="an-str">—</span></div>
@@ -599,6 +588,7 @@ let cakeGhostGrp  = null;   // cycling ghost primary payload during solve
 let candidateMeshes = [];
 let userPayloadMesh = null;
 let primaryPayloadGrp = null;
+let emptySlotGrp = null;   // ghost mesh for the skipped ESPA middle-ring slot
 let currentFairingRadiusAtWorldY = () => 0;
 // Cached references updated after buildFairingScene to avoid per-frame traversal
 let userPayloadBodyMat = null;   // the single MeshStandardMaterial on the user payload box
@@ -897,7 +887,7 @@ function buildVehicleFairingGeometry(v, fairingOffsetY) {
   fairingGroup.add(clampRing);
   fairingGroup.add(mkRing(aftR, aftFaceY, 80, new THREE.LineBasicMaterial({color:0x2255ff, transparent:true, opacity:.85})));
 
-  const pafR = 0.67;
+  const pafR = S.payloadRole === 'dedicated' ? aftR - 0.055 : 0.67;
   const pafMesh = new THREE.Mesh(new THREE.RingGeometry(pafR * 0.45, pafR, 40), wfPaf);
   pafMesh.rotation.x = -Math.PI / 2;
   pafMesh.position.y = aftFaceY;
@@ -944,6 +934,7 @@ function buildVehicleFairingGeometry(v, fairingOffsetY) {
 function buildFairingScene(vIdx) {
   [fairingGroup, payloadGroup, espaGroup, massGroup, mountGroup].forEach(g=>{ if(g) scene.remove(g); });
   if(userPayloadMesh) scene.remove(userPayloadMesh);
+  emptySlotGrp = null;
 
   const v  = VEHICLES[vIdx];
   const R  = v.fairR;
@@ -957,6 +948,110 @@ function buildFairingScene(vIdx) {
 
   const fairingOffsetY = 0.7; // fixed offset: keeps ESPA ring inside cylinder, PAF cone bottom below ESPA stack
   const { aftFaceY, aftR } = buildVehicleFairingGeometry(v, fairingOffsetY);
+
+  // ── DEDICATED LAUNCH CONFIGURATION ──────────────────────────────────────────
+  // No ESPA, no co-manifest payloads. Payload attaches directly to the vehicle
+  // separation system via a short cylindrical adapter.
+  if (S.payloadRole === 'dedicated') {
+    updatePayloadRoleNote('dedicated', false, false);
+
+    const pafBotY   = aftFaceY + fairingOffsetY;
+    const dedAdaptR = aftR * 0.70;
+    const dedAdaptH = ER * 0.60;
+    const dedAdaptTopY = pafBotY + dedAdaptH;
+
+    // Gold clamp band at the vehicle separation interface
+    const clampMat = new THREE.MeshStandardMaterial({
+      color:0xddaa22, metalness:0.85, roughness:0.12, emissive:0x664400, emissiveIntensity:0.6
+    });
+    const clampTorus = new THREE.Mesh(new THREE.TorusGeometry(aftR, 0.055, 12, 80), clampMat);
+    clampTorus.rotation.x = Math.PI/2;
+    clampTorus.position.y = pafBotY;
+    espaGroup.add(clampTorus);
+
+    // Bolt ring at clamp band
+    const sepBoltMat = new THREE.MeshStandardMaterial({
+      color:0xccaa22, metalness:.95, roughness:.1, emissive:0x443300, emissiveIntensity:.3
+    });
+    for(let i = 0; i < 40; i++) {
+      const a = (i/40)*Math.PI*2;
+      const bolt = new THREE.Mesh(new THREE.SphereGeometry(0.028, 6, 6), sepBoltMat);
+      bolt.position.set(Math.cos(a)*aftR, pafBotY, Math.sin(a)*aftR);
+      espaGroup.add(bolt);
+    }
+
+    // Short cylindrical adapter
+    const dedAdaptMat = new THREE.MeshStandardMaterial({
+      color:0x2a3848, metalness:0.6, roughness:0.4,
+      transparent:true, opacity:0.85, side:THREE.DoubleSide
+    });
+    const dedAdaptMesh = new THREE.Mesh(
+      new THREE.CylinderGeometry(dedAdaptR * 0.88, dedAdaptR, dedAdaptH, 48, 1, true),
+      dedAdaptMat
+    );
+    dedAdaptMesh.position.y = pafBotY + dedAdaptH/2;
+    espaGroup.add(dedAdaptMesh);
+
+    // Adapter ribs
+    for(let i = 0; i < 16; i++) {
+      const a = (i/16)*Math.PI*2;
+      espaGroup.add(mkLine([
+        new THREE.Vector3(Math.cos(a)*dedAdaptR,        pafBotY,      Math.sin(a)*dedAdaptR),
+        new THREE.Vector3(Math.cos(a)*dedAdaptR*0.88,   dedAdaptTopY, Math.sin(a)*dedAdaptR*0.88),
+      ], new THREE.LineBasicMaterial({color:0x446688, transparent:true, opacity:0.50})));
+    }
+    espaGroup.add(mkRing(aftR - 0.055,    pafBotY,      48, new THREE.LineBasicMaterial({color:0x888888, transparent:true, opacity:0.55})));
+    espaGroup.add(mkRing(dedAdaptR*0.88,  dedAdaptTopY, 48, new THREE.LineBasicMaterial({color:0xf5c518, transparent:true, opacity:0.80})));
+
+    // User payload — larger scale since full vehicle capacity is available
+    const dedW = Math.min(R * 0.88, S.envL/1000);
+    const dedH = S.envH/1000;
+    const dedD = Math.min(R * 0.88, S.envW/1000);
+    const dedBotY = dedAdaptTopY + 0.05;
+    const primGrp = new THREE.Group();
+    primGrp.add(new THREE.Mesh(
+      new THREE.BoxGeometry(dedW, dedH, dedD),
+      new THREE.MeshStandardMaterial({
+        color:0xf59e0b, metalness:.15, roughness:.55,
+        transparent:true, opacity:.28, depthWrite:false, side:THREE.DoubleSide
+      })
+    ));
+    primGrp.add(mkBoxWireframe(dedW, dedH, dedD,
+      new THREE.LineBasicMaterial({color:0xf5c518, transparent:true, opacity:.95})));
+    for(let li = 0; li < 5; li++) {
+      const yOff = -dedH*.40 + (dedH*.80/4)*li;
+      primGrp.add(mkLine([
+        new THREE.Vector3(-dedW*.44, yOff,  dedD/2+.003),
+        new THREE.Vector3( dedW*.44, yOff,  dedD/2+.003),
+      ], new THREE.LineBasicMaterial({color:0xf5c518, transparent:true, opacity:.40})));
+      primGrp.add(mkLine([
+        new THREE.Vector3(-dedW*.44, yOff, -dedD/2-.003),
+        new THREE.Vector3( dedW*.44, yOff, -dedD/2-.003),
+      ], new THREE.LineBasicMaterial({color:0xf5c518, transparent:true, opacity:.22})));
+    }
+    primGrp.position.set(0, dedBotY + dedH/2, 0);
+    espaGroup.add(primGrp);
+    primaryPayloadGrp = primGrp;
+    primGrp.traverse(ch => { if(ch.isMesh && ch.material) ch.material._baseOpacity = ch.material.opacity; });
+
+    scene.add(fairingGroup, espaGroup, payloadGroup, massGroup, mountGroup);
+    fairingGroup.visible = S.showFairing;
+    espaGroup.visible    = true;
+    payloadGroup.visible = false;
+    mountGroup.visible   = false;
+    massGroup.visible    = false;
+
+    userPayloadBodyMat = null;
+    payloadGroupGroups = [];
+
+    camDist  = 22.0;
+    camPhi   = 1.08;
+    camTheta = 0.60;
+    camTarget.set(0, 1.5, 0);
+    updateCamera();
+    checkPayloadFit();
+    return;
+  }
 
   // ── 2. ESPA RING — three stacked rings (ORBCOMM-style configuration) ──
   const collarR   = ER * 0.68;   // 26% narrower central tower
@@ -1145,7 +1240,7 @@ function buildFairingScene(vIdx) {
   // Middle ring: mixed mid-size (12U / 6U)
   // Top ring:    small nanosats (3U / 6U compact)
   const ringSizes = [
-    [{w:1.28,h:1.14,d:1.06},{w:1.10,h:1.00,d:0.92},{w:1.22,h:1.08,d:1.00},{w:1.35,h:1.20,d:1.10},{w:1.05,h:0.96,d:0.88},{w:1.18,h:1.06,d:0.98}], // bottom — ESPA-Grande
+    [{w:1.05,h:0.93,d:0.87},{w:0.90,h:0.82,d:0.75},{w:1.00,h:0.89,d:0.82},{w:1.11,h:0.98,d:0.90},{w:0.86,h:0.79,d:0.72},{w:0.97,h:0.87,d:0.80}], // bottom — ESPA-Grande
     [{w:0.92,h:0.82,d:0.76},{w:0.68,h:0.60,d:0.54},{w:0.86,h:0.76,d:0.68},{w:0.92,h:0.82,d:0.76},{w:0.78,h:0.70,d:0.62},{w:0.68,h:0.60,d:0.54}], // middle — 12U / 6U
     [{w:0.44,h:0.40,d:0.34},{w:0.56,h:0.50,d:0.44},{w:0.44,h:0.40,d:0.34},{w:0.50,h:0.46,d:0.38},{w:0.44,h:0.40,d:0.34},{w:0.56,h:0.50,d:0.44}], // top — 3U / 6U compact
   ];
@@ -1164,8 +1259,25 @@ function buildFairingScene(vIdx) {
 
   [-ringStep, 0, ringStep].forEach((ringY, ri) => {
     for(let pi = 0; pi < N; pi++){
-      // Clear only the middle ring at the user's port — that's where the cyan payload sits
-      if (pi === _sidePortIdx && ri === 1) continue;
+      // Middle ring at the user's port: create hidden ghost (revealed post-solve if not side-mounted)
+      if (pi === _sidePortIdx && ri === 1) {
+        const sz = ringSizes[ri][pi % ringSizes[ri].length];
+        const gw = sz.w, gh = sz.h, gd = sz.d;
+        const ga = (pi / N) * Math.PI * 2;
+        const gBodyMat = new THREE.MeshStandardMaterial({color:0x0a1a3a, transparent:true, opacity:0, depthWrite:false, side:THREE.DoubleSide});
+        const gEdgeMat = new THREE.LineBasicMaterial({color:0x2266cc, transparent:true, opacity:0});
+        const gGrp = new THREE.Group();
+        gGrp.add(new THREE.Mesh(new THREE.BoxGeometry(gw, gh, gd), gBodyMat));
+        gGrp.add(mkBoxWireframe(gw, gh, gd, gEdgeMat));
+        gGrp.position.set(Math.cos(ga)*(ringR + gd/2 + bracketGap), ringY, Math.sin(ga)*(ringR + gd/2 + bracketGap));
+        gGrp.rotation.y = -ga;
+        gGrp._baseY = ringY;
+        gGrp._ghostBodyMat = gBodyMat;
+        gGrp._ghostEdgeMat = gEdgeMat;
+        payloadGroup.add(gGrp);
+        emptySlotGrp = gGrp;
+        continue;
+      }
 
       const a   = (pi / N) * Math.PI * 2;
       const sz  = ringSizes[ri][pi % ringSizes[ri].length];
@@ -1405,7 +1517,7 @@ function setManifestPayloadFitState(group, fits) {
 
 function updateManifestPayloadFitStates() {
   if (!payloadGroupGroups.length) return;
-  if (!S.showFairing) {
+  if (!S.showFairing || S.solved) {
     payloadGroupGroups.forEach(group => setManifestPayloadFitState(group, true));
     return;
   }
@@ -2030,8 +2142,16 @@ function finishPlayback(){
   // Snap manifest payloads and primary payload to final resting state
   if(payloadGroup) payloadGroupGroups.forEach(grp=>{ if(grp._homePos){ grp.position.set(grp._homePos.x,grp._homePos.y,grp._homePos.z); grp.rotation.y=grp._homePos.rotY; }});
   if(userPayloadMesh?._homePos){ const h=userPayloadMesh._homePos; userPayloadMesh.position.set(h.x,h.y,h.z); userPayloadMesh.rotation.y=h.rotY; }
+  if(payloadGroup) payloadGroup.visible = true;
+  payloadGroupGroups.forEach(g => setManifestPayloadFitState(g, true));
   if(primaryPayloadGrp){ primaryPayloadGrp.visible = true; primaryPayloadGrp.scale.setScalar(1); }
   if(mountGroup) mountGroup.visible = true;
+  // Fill empty ESPA slot with ghost when user payload is cake-topped (not side-mounted)
+  if (emptySlotGrp && !S._primSideMount) {
+    emptySlotGrp._ghostBodyMat.opacity = 0.35;
+    emptySlotGrp._ghostEdgeMat.opacity = 0.85;
+  }
+
   // Lock ghost to winning primary candidate (index 1 — medium sat, 1.5×2.5×1.2m)
   if (cakeGhostGrp && S._primSideMount) {
     const [gw, gh, gd] = cakeGhostGrp._sizes[1];
@@ -2161,6 +2281,12 @@ function setPayloadRole(role, el) {
     chip.classList.toggle('on', chip.dataset.role === role);
   });
   if (el) el.classList.add('on');
+  const runBtn = document.getElementById('run-btn');
+  if (runBtn) {
+    runBtn.disabled = (role === 'dedicated');
+    runBtn.style.opacity = (role === 'dedicated') ? '0.35' : '';
+    runBtn.title = (role === 'dedicated') ? 'Dedicated launch — no constraint solver needed' : '';
+  }
   buildFairingScene(S.selOpt);
 }
 
